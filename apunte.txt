@@ -1,0 +1,24 @@
+INSTALACIONES:
+pip install fastapi
+
+Para terminos de servidor: conda install -c conda-forge uvicorn
+Para decodificar datos en formato json: conda install -c conda-forge python-multipart
+Para poder realizar encryptacione sy manejo de JWT: pip install python-jose[cryptography]
+Para crear nuestro hash de contraseñas: pip install passlib[bcrypt]
+
+uvicorn main:app --reload (recargara el servicio por cada cambio)
+
+Para generar nuestra clave secreta, se neceista estar en laterminal
+
+La clave ser parte de hacer nuestro cifrado y algoritmo hash, así que con el siguiente ocmando crearemos una clave secreta de 32 bits:
+openssl rand -hex 32
+
+Función en el main para que se creen las tablas en base:
+def create_tables():
+    try:
+        Base.metadata.create_all(bind=engine)
+        print('Creación de tablas exitosa')
+    except Exception as e:
+        print('Existe un Error: '.e)
+
+create_tables()
