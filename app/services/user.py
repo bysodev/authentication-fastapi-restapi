@@ -1,10 +1,12 @@
 from fastapi import HTTPException, status
 from sqlalchemy.orm import Session
-from app.utils import hashing
+from app.utils import hashing 
+from app.utils.proccess import process_image_from_base64, get_prediction
 from app.repository import user
 from app.models import models
-from app.schemas.schemas import UserInDB
+from app.schemas.schemas import UserInDB, Lesson
 from app.models.models import User
+import base64
 
 def service_crear_usuario(usuario, db: Session):
     usuario = usuario.dict()
@@ -47,6 +49,10 @@ def authenticate_user(db: Session, nombre: str, password: str):
         return False
     if not hashing.Hash.verify_password(password, user.password):
         return False
-    
     return user
+
+def validar_lesson( lesson: Lesson ):
+    imagen = process_image_from_base64(lesson.imagen)
+    get_prediction(imagen)
+    return 'POSI'
 

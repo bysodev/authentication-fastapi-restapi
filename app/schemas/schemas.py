@@ -1,16 +1,23 @@
 from pydantic import BaseModel
 from datetime import datetime
+from typing import Optional
+
+class Lesson(BaseModel):
+    learn: str
+    imagen: str 
+    extension: str
+    tipo: str
 
 class User(BaseModel):
     # username: str
     password: str
     nombre: str
     apellido: str 
-    direccion: str
+    direccion: Optional[str]
+    # direccion: str
     telefono: str 
-    # direccion: Optional[str]
     email: str
-    create_user: datetime
+    # create_user: datetime
 
 # class UserVerify():
 

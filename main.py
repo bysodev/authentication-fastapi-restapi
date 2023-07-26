@@ -1,4 +1,5 @@
 from fastapi import Depends, FastAPI, HTTPException, status
+from fastapi.middleware.cors import CORSMiddleware
 # ''' Necesario para temas de nuestros tokens '''
 # from fastapi.security import OAuth2PasswordBearer, OAuth2PasswordRequestForm 
 # from pydantic import BaseModel
@@ -8,11 +9,37 @@ from fastapi import Depends, FastAPI, HTTPException, status
 from app.routers import user
 from app.db.database import Base,engine
 
+
+
+
 # from passlib.context import CryptoContext
  
 
 app = FastAPI()
 
+def create_tables():
+    try:
+        Base.metadata.create_all(bind=engine)
+        print('Creación de tablas exitosa')
+    except Exception as e:
+        print('Existe un Error: '.e)
+
+# create_tables()
+
+origins = [
+    "http://localhost:3000",
+    "http://127.0.0.1:3000",
+    "http://localhost",
+    "http://127.0.0.1"
+]
+app.add_middleware(
+    CORSMiddleware,
+    allow_origins=origins,
+    allow_credentials=True,
+    allow_methods=["*"],
+    allow_headers=["*"],
+    expose_headers=["set-cookie"]
+)
 app.include_router(user.router)
 
 
