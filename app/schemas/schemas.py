@@ -6,6 +6,7 @@ class Lesson(BaseModel):
     learn: str
     imagen: str 
     extension: str
+    vocal: str
     tipo: str
 
 class User(BaseModel):

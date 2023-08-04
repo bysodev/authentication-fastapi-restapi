@@ -62,7 +62,7 @@ async def read_users_me(current_user = Depends(Hash.get_current_active_user)):
     return current_user
 
 
-@router.post('/lesson', status_code=status.HTTP_200_OK)
+@router.post('/lesson/vocales', status_code=status.HTTP_200_OK)
 def consult_lesson(lesson: Lesson | None, current_user = Depends(Hash.get_current_active_user)):
     # print(lesson)
     validar_lesson(lesson)
