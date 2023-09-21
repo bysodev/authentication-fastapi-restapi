@@ -8,12 +8,15 @@ from decouple import config
 from app.schemas.schemas import TokenData, UserInDB, Token
 from app.services.user import get_user
 from app.db.database import get_db
-
+import uuid
 
 pwd_context = CryptContext(schemes=["bcrypt"], deprecated="auto") #Se configura el contexto para utilizar el esquema de hash "bcrypt" y se permite la detección automática de esquemas hash desaprobados.
 oauth_scheme = OAuth2PasswordBearer(tokenUrl='token')
 
 class Hash():
+
+    def hash_verify():
+        return uuid.uuid1()
     
     def hash_password(password):
         return pwd_context.hash(password)

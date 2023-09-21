@@ -10,15 +10,9 @@ class Lesson(BaseModel):
     tipo: str
 
 class User(BaseModel):
-    # username: str
+    username: str
     password: str
-    nombre: str
-    apellido: str 
-    direccion: Optional[str]
-    # direccion: str
-    telefono: str 
     email: str
-    # create_user: datetime
 
 # class UserVerify():
 
