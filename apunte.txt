@@ -1,3 +1,5 @@
+source fastapi/Scripts/activate
+
 INSTALACIONES:
 pip install fastapi
 

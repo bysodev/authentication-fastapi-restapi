@@ -32,8 +32,6 @@ def verify_usuario( token: str, db: Session = Depends(get_db)):
 # @router.post('/token', response_model=Token)
 @router.post('/token')
 async def login_for_access_token(form_data: OAuth2PasswordRequestForm = Depends(), db: Session = Depends(get_db)):
-    print('HOLSAAAAAAAAAAAAAAAAA')
-    print({form_data.username, form_data.password})
     # validar si el usuario esta en base (no si esta verificado)
     user = authenticate_user(db, form_data.username, form_data.password )
     if not user:
@@ -63,10 +61,12 @@ async def read_users_me(current_user = Depends(Hash.get_current_active_user)):
     return current_user
 
 @router.post('/lesson/vocales', status_code=status.HTTP_200_OK)
-def consult_lesson(lesson: Lesson | None, current_user = Depends(Hash.get_current_active_user)):
-    # print(lesson)
-    validar_lesson(lesson)
-    return 'OK'
+def consult_lesson(lesson: Lesson | None):
+    result = validar_lesson(lesson)
+    if result is None:
+        raise HTTPException(status_code=400, detail="No se ha podido clasificar la imagen")
+    # Realiza otras validaciones aquí si es necesario
+    return result
 
 # PRUEBA
 

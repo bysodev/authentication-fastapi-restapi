@@ -5,67 +5,57 @@ import math
 from PIL import Image
 from io import BytesIO
 import os
+import mediapipe as mp
+from mediapipe.tasks import python
 
-# PARA EL RECONOCIMEINTO DE LAS MANOS
-from cvzone.HandTrackingModule import HandDetector
-from cvzone.ClassificationModule import Classifier 
 
-Classifier = Classifier("./model/keras_model.h5", "./model/labels.txt")
+model_path = "./model/sign_language_recognizer_25-04-2023.task"
+BaseOptions = python.BaseOptions
+GestureRecognizer = mp.tasks.vision.GestureRecognizer
+GestureRecognizerOptions = mp.tasks.vision.GestureRecognizerOptions
+GestureRecognizerResult = mp.tasks.vision.GestureRecognizerResult
+VisionRunningMode = mp.tasks.vision.RunningMode
 
-detector = HandDetector(maxHands=1)
-offset = 20
-imgSize = 300
 
-labels = ["A", "I"]
+def print_result(result: GestureRecognizerResult, output_image: mp.Image):
+    try:
+        print('gesture recognition result: {}'.format(result.gestures[0][0].category_name))
+    except:
+        print(f"Error al obtener la categoría clasificada: {str(result)}")
+        return None
 
-# Decodificar la imagen base64 y convertirla a una imagen PIL
-# pil_image = Image.open(BytesIO(image_bytes))
-# Convertir la imagen PIL a una matriz de NumPy
-# frame_capture = np.array(pil_image)
-# output_directory = '/img'
-# os.makedirs(output_directory, exist_ok=True)
-# pil_image = Image.fromarray(frame)
-# pil_image.save(os.path.join(output_directory, 'nueva1.jpeg'))
+options = GestureRecognizerOptions(
+    base_options=BaseOptions(model_asset_path=model_path),
+    running_mode=VisionRunningMode.IMAGE)
+
+recognizer = GestureRecognizer.create_from_options(options)
 
 def process_image_from_base64(image_base64):
-    image_bytes = base64.b64decode(image_base64)
-    np_array = np.frombuffer(image_bytes, dtype=np.uint8)
-    return np_array
+    try:
+        # Verifica que la cadena comience con "data:image/"
+        if not image_base64.startswith("data:image/"):
+            raise ValueError("No es una URL de datos válida")
+        # Extrae el tipo de contenido
+        content_type = image_base64.split(";")[0].replace("data:image/", "")
+        # Verifica que el tipo de contenido sea compatible
+        if content_type not in ["jpeg", "jpg", "png"]:
+            raise ValueError(f"Tipo de contenido no compatible: {content_type}")
+        # Elimina los encabezados "data:image/<tipo_de_contenido>;base64,"
+        base64_data = image_base64.split(",")[1]
+        # Decodifica la cadena base64 y devuelve los bytes
+        image_bytes = base64.b64decode(base64_data)
+        image_np = np.frombuffer(image_bytes, dtype=np.uint8)
+        return image_np
+    except Exception as e:
+        print(f"Error al obtener los bytes de la imagen: {str(e)}")
+        return None
 
 def get_prediction(image):
-
     # Decodifica el arreglo de NumPy a una imagen
     frame = cv2.imdecode(image, cv2.IMREAD_COLOR)
-    hands, frame = detector.findHands(frame)
-
-    if hands:
-        hand = hands[0]
-        x, y, w, h = hand['bbox']
-        frameWhite = np.ones((imgSize, imgSize, 3), np.uint8)*255
-        frameCapture = frame[y-offset:y + h + offset, x - offset:x + w + offset]
-
-        if frameWhite is not None and frameWhite.any():
-            frameShape = frameWhite.shape
-            aspectRatio = h / w
-            
-            if(aspectRatio > 1):
-                k = imgSize/h
-                wCal = math.ceil(k*w)
-                imgResize = cv2.resize(frameWhite, (wCal, imgSize))
-                imgResizeShape = imgResize.shape
-                wGap = math.ceil((imgSize-wCal) / 2)
-                frameWhite[: , wGap:wCal+wGap, :] = imgResize
-                # frameWhite[0: imgResizeShape[0], 0: imgResizeShape[1]] = imgResize
-                prediction, index = Classifier.getPrediction(frameWhite, draw=False)
-                print(prediction, index)
-                print(labels[index])
-            else:
-                k = imgSize / w
-                hCal = math.ceil(k*h)
-                imgResize = cv2.resize(frameWhite, (imgSize, hCal))
-                imgResizeShape = imgResize.shape
-                hGap = math.ceil((imgSize-hCal) / 2)
-                frameWhite[hGap:hCal + hGap , :] = imgResize
-                prediction, index = Classifier.getPrediction(frameWhite, draw=False)
-                print(prediction, index)
-                print(labels[index])
+    mp_image = mp.Image(image_format=mp.ImageFormat.SRGB, data=frame)
+    results = recognizer.recognize(mp_image)
+    print_result(results, mp_image)
+    if results.gestures:
+        return {"Resultado": results.gestures[0][0].category_name}
+    return None
