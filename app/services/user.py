@@ -1,12 +1,15 @@
 from fastapi import HTTPException, status
 from sqlalchemy.orm import Session
-from app.utils import hashing 
+from app.utils import hashing
+from app.utils import gesture
 from app.utils.proccess import process_image_from_base64, get_prediction
 from app.repository import user
 from app.models import models
 from app.schemas.schemas import UserInDB, Lesson
 from app.models.models import User
-import base64
+
+model_path = "./model/sign_language_recognizer_25-04-2023.task"
+gesture_recognition = gesture.GestureRecognitionService(model_path)
 
 def service_crear_usuario(usuario, db: Session):
     usuario = usuario.dict()
@@ -86,5 +89,5 @@ def authenticate_user_verify(db: Session, username: str, password: str):
 
 def validar_lesson( lesson: Lesson ):
     imagen = process_image_from_base64(lesson.imagen)
-    return get_prediction(imagen)
-
+    result = gesture_recognition.get_gesture_prediction(imagen)   
+    return result

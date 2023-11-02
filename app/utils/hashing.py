@@ -36,23 +36,17 @@ class Hash():
         return encode_jwt
     
     async def get_current_user(token: str = Depends(oauth_scheme), db: Session = Depends(get_db)):
-        credential_exception = HTTPException(status_code=status.HTTP_401_UNAUTHORIZED,
-                                             detail='Could not validate credentials', headers={'WWW.Authenticate': 'Bearer'})
         try:
             payload = jwt.decode(token, config('SECRET_KEY'), algorithms=[config('ALGORITMO')])
-            nombre: str = payload.get('sub')
+            nombre: str = payload.get('name')
             if nombre is None:
-                raise credential_exception
-            # token_data = TokenData(nombre)
+                raise HTTPException(status_code=status.HTTP_401_UNAUTHORIZED, detail='Usuario no autorizado', headers={'WWW.Authenticate': 'Bearer'})
+            user = get_user(db, username=nombre)
+            if user is None:
+                raise HTTPException(status_code=status.HTTP_401_UNAUTHORIZED, detail='Usuario no encontrado', headers={'WWW.Authenticate': 'Bearer'})
+            return user
         except JWTError:
-            raise credential_exception
-        
-        user = get_user(db, nombre=nombre)
-        # user = get_user(db, nombre=token_data.nombre)
-        if user is None:
-            raise credential_exception
-        
-        return user
+            raise HTTPException(status_code=status.HTTP_401_UNAUTHORIZED, detail='No se pudieron validar las credenciales', headers={'WWW.Authenticate': 'Bearer'})
     
     async def get_current_active_user(current_user = Depends(get_current_user)):
         if current_user.estado:

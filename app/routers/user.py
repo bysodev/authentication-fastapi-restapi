@@ -1,4 +1,4 @@
-from fastapi import HTTPException,APIRouter,Depends,status, Response, Cookie
+from fastapi import HTTPException,APIRouter,Depends,status, Response, Cookie, WebSocket, WebSocketDisconnect
 from fastapi.responses import JSONResponse
 from typing import Annotated
 from fastapi.security import OAuth2PasswordRequestForm
@@ -10,6 +10,10 @@ from typing import List
 from decouple import config
 from app.utils.hashing import Hash
 from app.services.user import service_crear_usuario, service_verified_usuario, service_view_usuarios, authenticate_user, validar_lesson, authenticate_user_verify
+import json
+import concurrent.futures
+
+websocket_clients = []
 
 router = APIRouter(
     prefix='/user',
@@ -61,12 +65,42 @@ async def read_users_me(current_user = Depends(Hash.get_current_active_user)):
     return current_user
 
 @router.post('/lesson/vocales', status_code=status.HTTP_200_OK)
-def consult_lesson(lesson: Lesson | None):
-    result = validar_lesson(lesson)
-    if result is None:
-        raise HTTPException(status_code=400, detail="No se ha podido clasificar la imagen")
-    # Realiza otras validaciones aquí si es necesario
-    return result
+async def consult_lesson(lesson: Lesson | None, current_user = Depends(Hash.get_current_active_user)):
+    try:
+        if isinstance(lesson, dict):
+            lesson = Lesson(
+                learn=lesson['learn'],
+                imagen=lesson['imagen'],
+                extension=lesson['extension'],
+                tipo=lesson['tipo'],
+                vocal=lesson['vocal']
+            )
+        result = validar_lesson(lesson)
+        if result is None:
+            raise HTTPException(status_code=400, detail="No se ha podido identificar la seña procesada")
+        # Realiza otras validaciones aquí si es necesario
+        print(result)
+        return result
+    except ValueError as e:
+        raise HTTPException(status_code=400, detail=str(e))
+
+# Ruta WebSocket para la clasificación de imágenes en tiempo real
+@router.websocket("/ws/lesson/vocales")
+async def classify_images(websocket: WebSocket):
+    await websocket.accept()
+    # Agrega el cliente WebSocket a la lista de clientes conectados
+    websocket_clients.append(websocket)
+    try:
+        while True:
+            data = await websocket.receive_text()
+            data_dict = json.loads(data)
+            result = await consult_lesson(data_dict)
+            # Envía el resultado de la clasificación de la imagen de vuelta al cliente
+            await websocket.send_json(result)
+    except WebSocketDisconnect:
+        # Cuando el cliente se desconecta, elimina el WebSocket de la lista de clientes
+        websocket_clients.remove(websocket)
+
 
 # PRUEBA
 
