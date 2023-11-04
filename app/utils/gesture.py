@@ -25,7 +25,7 @@ class GestureRecognitionService:
             mp_image = mp.Image(image_format=mp.ImageFormat.SRGB, data=frame)
             results = self.recognizer.recognize(mp_image)
             if results.gestures:
-                return {"Resultado": results.gestures[0][0].category_name}
+                return {"result": results.gestures[0][0].category_name}
             else:
                 return None
         except Exception as e:

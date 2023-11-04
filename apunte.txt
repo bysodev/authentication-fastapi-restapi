@@ -1,3 +1,4 @@
+python -m venv fastapi
 source fastapi/Scripts/activate
 
 INSTALACIONES:
