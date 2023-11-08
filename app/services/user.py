@@ -11,28 +11,33 @@ from app.models.models import User
 model_path = "./model/sign_language_recognizer_25-04-2023.task"
 gesture_recognition = gesture.GestureRecognitionService(model_path)
 
-def service_crear_usuario(usuario, db: Session):
-    usuario = usuario.dict()
-    password_hash = hashing.Hash.hash_password(usuario["password"]),
+class UserAlreadyExistsException(Exception):
+    pass
+
+def service_new_user(new_user, db: Session):
+    user_dict = new_user.dict()
+    password_hash = hashing.Hash.hash_password(user_dict["password"])
     verify_hash = hashing.Hash.hash_verify()
-    print(verify_hash)
+
     try:
-        nuevo_usuario = models.User(
-            username=usuario["username"],
+        new_user = models.User(
+            username=user_dict["username"],
             password=password_hash,
-            email=usuario["email"],
+            email=user_dict["email"],
             token=verify_hash
         )
-        user.crear_usuario(nuevo_usuario, db)
-        return { "username": usuario["username"], "token": verify_hash }
-    except Exception as e :
+
+        if not user.get_user_by_name_or_email(new_user, db):
+            user.create_user(new_user, db)
+            return { "username": new_user.username, "token": verify_hash }
+    except Exception as e:
         raise HTTPException(
-            status_code=status.HTTP_409_CONFLICT,
-            detail=f"Error creando usuario {e}"
+            status_code=status.HTTP_400_BAD_REQUEST,
+            detail=f"Error al crear el usuario {e}"
         )
 
-def service_verified_usuario(token: str, db: Session):
-    print(token)
+
+def service_verified_user(token: str, db: Session):
     try:
         return user.verify_user_by_token(token, db)
     except Exception as e :
@@ -40,16 +45,6 @@ def service_verified_usuario(token: str, db: Session):
             status_code=status.HTTP_409_CONFLICT,
             detail=f"Error verificando usuario {e}"
         )
-
-def service_view_usuarios(db:Session):
-    data = db.query(User).all()
-    return data
-    # user.obtener_usuarios(db)
-
-# def get_user(db: Session, nombre: str):
-#     if nombre in db:
-#         user_data = db[nombre]
-#         return UserInDB(**user_data)
 
 def get_user(db: Session, username: str):
     user = db.query(User).filter(User.username == username).first()
