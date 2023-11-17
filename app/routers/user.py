@@ -31,8 +31,12 @@ def new_user(user: User, db: Session = Depends(get_db)):
 @router.get('/verified', status_code=status.HTTP_200_OK)
 def verify_user( token: str, db: Session = Depends(get_db)):
     user = service_verified_user(token,db)
-    if not user:
+    
+    if user == True:
         raise HTTPException(status_code=status.HTTP_401_UNAUTHORIZED, 
+                            detail='El usuario ya está verificado')
+    if user == False:
+        raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST, 
                             detail='Token de verificación incorrecto')
     return {"respuesta":"Usuario verificado exitosamente"}
 
@@ -57,7 +61,7 @@ async def login_for_access_token(form_data: OAuth2PasswordRequestForm = Depends(
     access_token_expire = timedelta(minutes=int(config('ACCESS_TOKEN_EXPIRE_MINUTES')))
     access_token = Hash.create_access_token(data={'name': user.username, 'email': user.email}, expires_delta=access_token_expire)
 
-    body = {'message': 'Se ha iniciado sesión correctamente', ' ': access_token, 'username': user.username, 'email': user.email, 'token_type': 'Bearer', 'id': user.id}
+    body = {'message': 'Se ha iniciado sesión correctamente', 'token': access_token, 'username': user.username, 'email': user.email, 'token_type': 'Bearer', 'id': user.id}
     response = JSONResponse(content=body)
 
     return response

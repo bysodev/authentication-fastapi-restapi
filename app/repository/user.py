@@ -12,13 +12,16 @@ def verify_user_by_token(token: str, db: Session):
     user = db.query(User).filter(User.token == token).first()
 
     if user:
-        # Si se encuentra un usuario con el token, establecer 'verified' en True
-        user.verified = True
-        db.commit()
-        return user
+        if user.verified == False:
+            # Si se encuentra un usuario con el token, establecer 'verified' en True
+            user.verified = True
+            db.commit()
+            return user
+        else:
+            return True
     else:
         # Si no se encuentra un usuario con el token, puedes manejar el error o retorno apropiado aquí.
-        return None
+        return False
     
 def get_user_by_name_or_email(user: User , db:Session):
     # Realiza una sola consulta para buscar al usuario por nombre de usuario o correo electrónico.

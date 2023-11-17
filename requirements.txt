@@ -8,7 +8,8 @@ python-decouple
 sqlalchemy
 psycopg2-binary
 passlib
-python-jose>=3.0.0
+python-jose
+# python-jose>=3.0.0
 opencv-python
 Pillow
 cvzone
