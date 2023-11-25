@@ -14,10 +14,6 @@ class User(BaseModel):
     password: str
     email: str
 
-# class UserVerify():
-
-
-
 class UserCors(BaseModel):
     nombre: str
     apellido: str

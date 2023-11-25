@@ -45,42 +45,38 @@ def service_verified_user(token: str, db: Session):
             status_code=status.HTTP_409_CONFLICT,
             detail=f"Error verificando usuario {e}"
         )
-
-def get_user(db: Session, username: str):
-    user = db.query(User).filter(User.username == username).first()
-    return user
-
-def get_user_check(db: Session, username: str, token: str):
-    user = db.query(User).filter(User.username == username, User.token == token).first()
-    return user
-
-def get_user_verify(db: Session, username: str):
-    user = db.query(User).filter(User.username == username, User.verified == True).first()
-    return user
-        
+    
 def authenticate_user(db: Session, username: str, password: str):
-    user = get_user(db, username)
-    if not user:
+    userData = user.get_user(db, username)
+    if not userData:
         return False
-    if not hashing.Hash.verify_password(password, user.password):
+    if not hashing.Hash.verify_password(password, userData.password):
         return False
-    return user
+    return userData
+
+def authenticate_user_provider(db: Session, username: str, email: str, id: str):
+    userData = user.get_user_by_name_and_email(db, username, email)
+    if not userData:
+        return False
+    if not hashing.Hash.verify_password(id, userData.password):
+        return False
+    return userData
 
 def authenticate_user_check(db: Session, username: str, password: str):
-    user = get_user_check(db, username)
-    if not user:
+    userData = user.get_user_check(db, username)
+    if not userData:
         return False
-    if not hashing.Hash.verify_password(password, user.password):
+    if not hashing.Hash.verify_password(password, userData.password):
         return False
-    return user
+    return userData
 
 def authenticate_user_verify(db: Session, username: str, password: str):
-    user = get_user_verify(db, username)
-    if not user:
+    userData = user.get_user_verify(db, username)
+    if not userData:
         return False
-    if not hashing.Hash.verify_password(password, user.password):
+    if not hashing.Hash.verify_password(password, userData.password):
         return False
-    return user
+    return userData
 
 def validar_lesson( lesson: Lesson ):
     imagen = process_image_from_base64(lesson.imagen)

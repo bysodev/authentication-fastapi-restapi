@@ -1,8 +1,5 @@
 import cv2
-import base64
-import numpy as np
 import mediapipe as mp
-from mediapipe.tasks import python
 
 class GestureRecognitionService:
     def __init__(self, model_path):
@@ -10,7 +7,7 @@ class GestureRecognitionService:
 
     def _initialize_recognizer(self, model_path):
         options = mp.tasks.vision.GestureRecognizerOptions(
-            base_options=python.BaseOptions(model_asset_path=model_path),
+            base_options=mp.tasks.BaseOptions(model_asset_path=model_path),
             running_mode=mp.tasks.vision.RunningMode.IMAGE
         )
         return mp.tasks.vision.GestureRecognizer.create_from_options(options)
