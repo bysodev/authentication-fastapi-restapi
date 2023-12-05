@@ -38,22 +38,6 @@ def verify_user( token: str, db: Session = Depends(get_db)):
                             detail='Token de verificación incorrecto')
     return {"respuesta":"Usuario verificado exitosamente"}
 
-@router.post('/loginProvider',  status_code=status.HTTP_201_CREATED)
-def login_for_oauth_provider(user: Any, db: Session = Depends(get_db)):
-    # username =  form_data.username
-    # email =  form_data.email
-    # # id =   form_data.id
-    # id= "a"
-    # user = authenticate_user_provider(db,username, email, id)
-    # if not user:
-    #     raise HTTPException(
-    #         status_code=status.HTTP_400_BAD_REQUEST,
-    #         detail="Usuario o contraseña incorrectos",
-    #         headers={'WWW.Authenticate': 'Bearer'}
-    #     )
-    # if not user:
-    #     new_user(username, email, id)
-
 @router.post('/login')
 async def login_for_access_token(form_data: OAuth2PasswordRequestForm = Depends(), db: Session = Depends(get_db)):
     user = authenticate_user(db, form_data.username, form_data.password)
@@ -73,13 +57,12 @@ async def login_for_access_token(form_data: OAuth2PasswordRequestForm = Depends(
     access_token_expire = timedelta(minutes=int(config('ACCESS_TOKEN_EXPIRE_MINUTES')))
     access_token = Hash.create_access_token(data={'name': user.username, 'email': user.email}, expires_delta=access_token_expire)
     # access_token = Hash.create_access_token(data={'name': user.username}, expires_delta=access_token_expire)
-
-    body = {'message': 'Se ha iniciado sesión correctamente', 'accessToken': access_token, 'username': user.username, 'email': user.email, 'token_type': 'Bearer', 'id': user.id}
+    body = {'message': 'Se ha iniciado sesión correctamente', 'accessToken': access_token, 'creation': user.creation.strftime("%Y-%m-%d") , 'username': user.username, 'email': user.email, 'token_type': 'Bearer', 'id': user.id}
     response = JSONResponse(content=body)
 
     return response
 
-@router.get('/users/me/')
+@router.get('/users/me')
 async def read_users_me(current_user = Depends(Hash.get_current_active_user)):
     return current_user
 

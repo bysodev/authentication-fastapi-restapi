@@ -81,4 +81,5 @@ def authenticate_user_verify(db: Session, username: str, password: str):
 def validar_lesson( lesson: Lesson ):
     imagen = process_image_from_base64(lesson.imagen)
     result = gesture_recognition.get_gesture_prediction(imagen)   
+    print(result)
     return result
