@@ -19,7 +19,7 @@ openssl rand -hex 32
 Función en el main para que se creen las tablas en base:
 def create_tables():
     try:
-        Base.metadata.create_all(bind=engine)
+        Base.metadata.create_all(bind=engine) 
         print('Creación de tablas exitosa')
     except Exception as e:
         print('Existe un Error: '.e)
