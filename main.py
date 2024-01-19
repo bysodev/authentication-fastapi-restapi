@@ -24,7 +24,7 @@ def create_tables():
     except Exception as e:
         print('Existe un Error: '.e)
 
-# create_tables()
+create_tables()
 
 origins = [
     "http://localhost:3000",
