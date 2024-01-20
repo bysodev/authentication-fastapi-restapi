@@ -10,7 +10,6 @@ def create_user(new_user: User , db:Session):
 def verify_user_by_token(token: str, db: Session):
     # Buscar el usuario por el token
     user = db.query(User).filter(User.token == token).first()
-
     if user:
         if user.verified == False:
             # Si se encuentra un usuario con el token, establecer 'verified' en True
@@ -22,6 +21,7 @@ def verify_user_by_token(token: str, db: Session):
     else:
         # Si no se encuentra un usuario con el token, puedes manejar el error o retorno apropiado aquí.
         return False
+
 def get_user(db: Session, username: str):
     user = db.query(User).filter(User.username == username).first()
     return user

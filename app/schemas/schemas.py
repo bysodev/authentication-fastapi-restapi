@@ -1,8 +1,42 @@
 from pydantic import BaseModel
 from datetime import datetime
-from typing import Optional
-from typing import List
+from typing import Optional, List
 
+class SchemaDifficulty(BaseModel):
+    name: str
+    bonus: int
+
+class SchemaCategory(BaseModel):
+    name: str
+
+class SchemaReachChallenges(BaseModel):
+    id_user: int
+    id_challenge: int
+    points: float
+    bonus: int
+    end_points: float
+    minutes: int
+    seconds: int
+    fails: int
+    streak: int
+    state: str
+
+class SchemaChallenge(BaseModel):
+    number: int
+    name: str
+    category_id: int
+    difficulty_id: int
+    description: str
+    points: int
+    minutes_max: int
+    seconds_max: int
+    fails_max: int
+    random: bool
+    operation: bool
+    spelled: bool
+    supplement: bool
+    content: List[str]
+      
 class PredictSign(BaseModel):
     category: str
     image: str 
