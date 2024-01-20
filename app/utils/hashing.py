@@ -43,9 +43,7 @@ class Hash():
         return encode_jwt
     
     async def get_current_user(token: str = Depends(oauth_scheme), db: Session = Depends(get_db)):
-        # print('Hola si entro a la petición')
         try:
-            # print(token)
             payload = jwt.decode(token, config('SECRET_KEY'), algorithms=[config('ALGORITMO')])
             username: str = payload.get('name')
             if username is None:
@@ -61,4 +59,4 @@ class Hash():
     async def get_current_active_user(current_user = Depends(get_current_user)):
         if current_user.estado:
             raise HTTPException(status_code=400, detail='Inactive user')
-        return {"username": current_user.username, "email": current_user.email, "creation": current_user.creation.strftime("%Y-%m-%d")}
+        return {"id": current_user.id, "username": current_user.username, "email": current_user.email, "creation": current_user.creation.strftime("%Y-%m-%d")}

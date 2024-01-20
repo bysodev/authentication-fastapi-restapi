@@ -1,13 +1,14 @@
 from pydantic import BaseModel
 from datetime import datetime
 from typing import Optional
+from typing import List
 
-class Lesson(BaseModel):
-    learn: str
-    imagen: str 
+class PredictSign(BaseModel):
+    category: str
+    image: str 
     extension: str
-    vocal: str
-    tipo: str
+    type: str
+    char: str
 
 class User(BaseModel):
     username: str
@@ -46,3 +47,24 @@ class TokenData(BaseModel):
 #     correo:str 
 #     class Config():
 #         orm_mode = True 
+
+class Lesson(BaseModel):
+    name: str
+    section_id: int
+    description: str
+    content: List[str]  # Permite tanto strings como integers en la lista
+    points: int
+    random: bool
+    max_time: int
+
+class User_lesson(BaseModel):
+    id_lesson: int
+    points_reached: int
+    state_id: int
+    fails: int
+    detail_fails: List[str] 
+
+class Section(BaseModel):
+    name: str
+    description: str
+    category_id: int
