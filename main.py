@@ -6,7 +6,7 @@ from fastapi.middleware.cors import CORSMiddleware
 # from datetime import datetime, timedelta
 # from jose import JWTError, jwt 
 # from decouple import config
-from app.routers import user
+from app.routers import user, challenge, category, difficulty, reach_challenge
 from app.db.database import Base,engine
 
 
@@ -22,7 +22,7 @@ def create_tables():
         Base.metadata.create_all(bind=engine)
         print('Creación de tablas exitosa')
     except Exception as e:
-        print('Existe un Error: '.e)
+        print(f'Existe un Error: {e}')
 
 # create_tables()
 
@@ -41,7 +41,10 @@ app.add_middleware(
     expose_headers=["set-cookie"]
 )
 app.include_router(user.router)
-
+app.include_router(challenge.router )
+app.include_router(reach_challenge.router )
+app.include_router(category.router )
+app.include_router(difficulty.router )
 
 #---------------------------------- 
 

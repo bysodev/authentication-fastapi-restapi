@@ -43,7 +43,7 @@ class Hash():
         return encode_jwt
     
     async def get_current_user(token: str = Depends(oauth_scheme), db: Session = Depends(get_db)):
-        # print('Hola si entro a la petición')
+        print('Hola si entro a la petición')
         try:
             # print(token)
             payload = jwt.decode(token, config('SECRET_KEY'), algorithms=[config('ALGORITMO')])
