@@ -1,12 +1,13 @@
 from typing import Annotated, Any, Dict
-from fastapi import HTTPException,APIRouter,Depends,status, WebSocket, WebSocketDisconnect
+from fastapi import HTTPException,APIRouter,Depends,status
 from fastapi.responses import JSONResponse
 from fastapi.security import OAuth2PasswordRequestForm
-from app.schemas.schemas import User, Lesson
+from app.schemas.schemas import User, PredictSign, User_lesson
 from app.db.database import get_db
 from sqlalchemy.orm import Session 
 from datetime import timedelta
 from decouple import config
+from app.services.user_lesson import service_create_new
 from app.utils.hashing import Hash
 from app.services.user import service_new_user, service_verified_user, authenticate_user, authenticate_user_provider, validar_lesson, authenticate_user_verify
 import json
@@ -66,39 +67,34 @@ async def login_for_access_token(form_data: OAuth2PasswordRequestForm = Depends(
 async def read_users_me(current_user = Depends(Hash.get_current_active_user)):
     return current_user
 
-@router.post('/lesson/vocales', status_code=status.HTTP_200_OK)
-async def consult_lesson(lesson: Lesson | None, current_user = Depends(Hash.get_current_active_user)):
+@router.post('/lesson/predict', status_code=status.HTTP_200_OK)
+async def consult_lesson(lesson: PredictSign):
     try:
         if isinstance(lesson, dict):
-            lesson = Lesson(
-                learn=lesson['learn'],
-                imagen=lesson['imagen'],
+            lesson = PredictSign(
+                category=lesson['category'],
+                image=lesson['image'],
                 extension=lesson['extension'],
-                tipo=lesson['tipo'],
-                vocal=lesson['vocal']
+                type=lesson['type'],
+                char=lesson['char']
             )
         result = validar_lesson(lesson)
         if result is None:
             raise HTTPException(status_code=400, detail="No se ha podido identificar la seña procesada")
         # Realiza otras validaciones aquí si es necesario
-        print(result)
         return result
     except ValueError as e:
         raise HTTPException(status_code=400, detail=str(e))
-
-# Ruta WebSocket para la clasificación de imágenes en tiempo real
-@router.websocket("/ws/lesson/vocales")
-async def classify_images(websocket: WebSocket):
-    await websocket.accept()
-    # Agrega el cliente WebSocket a la lista de clientes conectados
-    websocket_clients.append(websocket)
+    
+@router.post('/register/user_lesson', status_code=status.HTTP_201_CREATED)
+async def new_user_lesson(user_lesson: User_lesson, current_user = Depends(Hash.get_current_active_user), db: Session = Depends(get_db)):
     try:
-        while True:
-            data = await websocket.receive_text()
-            data_dict = json.loads(data)
-            result = await consult_lesson(data_dict)
-            # Envía el resultado de la clasificación de la imagen de vuelta al cliente
-            await websocket.send_json(result)
-    except WebSocketDisconnect:
-        # Cuando el cliente se desconecta, elimina el WebSocket de la lista de clientes
-        websocket_clients.remove(websocket)
+         # Agrega el id del usuario actual al objeto user_lesson
+        user_lesson.id_user = current_user.id
+        result = service_create_new(user_lesson, db)
+        if result is None:
+            raise HTTPException(status_code=400, detail="No se ha podido guardar la lección")
+        # Realiza otras validaciones aquí si es necesario
+        return result
+    except ValueError as e:
+        raise HTTPException(status_code=400, detail=str(e))
