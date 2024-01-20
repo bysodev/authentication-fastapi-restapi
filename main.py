@@ -6,11 +6,8 @@ from fastapi.middleware.cors import CORSMiddleware
 # from datetime import datetime, timedelta
 # from jose import JWTError, jwt 
 # from decouple import config
-from app.routers import user
+from app.routers import user, lesson, section
 from app.db.database import Base,engine
-
-
-
 
 # from passlib.context import CryptoContext
  
@@ -24,7 +21,7 @@ def create_tables():
     except Exception as e:
         print('Existe un Error: '.e)
 
-# create_tables()
+create_tables()
 
 origins = [
     "http://localhost:3000",
@@ -41,7 +38,8 @@ app.add_middleware(
     expose_headers=["set-cookie"]
 )
 app.include_router(user.router)
-
+app.include_router(lesson.router)
+app.include_router(section.router)
 
 #---------------------------------- 
 
