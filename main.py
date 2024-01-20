@@ -6,8 +6,11 @@ from fastapi.middleware.cors import CORSMiddleware
 # from datetime import datetime, timedelta
 # from jose import JWTError, jwt 
 # from decouple import config
-from app.routers import user, lesson, section
+from app.routers import user
 from app.db.database import Base,engine
+
+
+
 
 # from passlib.context import CryptoContext
  
@@ -27,7 +30,9 @@ origins = [
     "http://localhost:3000",
     "http://127.0.0.1:3000",
     "http://localhost",
-    "http://127.0.0.1"
+    "http://127.0.0.1",
+    "*",
+ 
 ]
 app.add_middleware(
     CORSMiddleware,
@@ -38,8 +43,7 @@ app.add_middleware(
     expose_headers=["set-cookie"]
 )
 app.include_router(user.router)
-app.include_router(lesson.router)
-app.include_router(section.router)
+
 
 #---------------------------------- 
 
