@@ -1,6 +1,6 @@
-from sqlalchemy.orm import Session 
-from app.models.models import Challenges, ReachChallenges, Category, Difficulty
-from sqlalchemy import func
+from sqlalchemy.orm import Session, aliased
+from app.models.models import Challenges, ReachChallenges, Category, Difficulty, User
+from sqlalchemy import func, select, text, column, bindparam, Integer, String, Numeric
 
 def create_challenge(new_challenge: Challenges , db:Session):
     db.add(new_challenge)
@@ -10,6 +10,33 @@ def create_challenge(new_challenge: Challenges , db:Session):
 def get_challenges(db: Session):
     challenges = db.query(Challenges).all()
     return challenges
+
+def ranking_challege_by_difficulty(db: Session, category: str):
+
+    stmt = text("WITH RankedUsers AS ( SELECT diff.name AS dificultad, us.username,  COUNT(reach.id) AS progreso, COALESCE(SUM(reach.points), 0) AS puntos, ROW_NUMBER() OVER (PARTITION BY diff.name ORDER BY COALESCE(SUM(reach.points), 0) DESC) AS ranking"
+            " FROM public.challenges AS chall"
+            " LEFT JOIN public.reach_challenges AS reach ON chall.id = reach.id_challenge"
+            " LEFT JOIN public.user AS us ON us.id = reach.id_user"
+            " JOIN public.category AS cate ON chall.category_id = cate.id AND cate.name=:categoria "
+            " JOIN public.difficulty AS diff ON chall.difficulty_id = diff.id"
+            "    WHERE reach.points IS NOT NULL"
+            " GROUP BY diff.name, us.username)"
+        " SELECT ran.*"
+        " FROM RankedUsers as ran"
+        " WHERE ranking <= 4;").\
+        bindparams(categoria=category)
+    
+    # stmt.bindparams(param=category)
+    
+    stmt.columns(
+        column('dificultad', String),
+        column('username', String),
+        column('progreso', Integer),
+        column('puntos', Numeric)
+    )
+
+    result = db.execute(stmt)
+    return result
 
 def get_challenges_by_category(db: Session, category: str):
     challenges = db.query(Challenges).filter(Challenges.category == category)
@@ -28,3 +55,38 @@ def get_challenges_by_user(db: Session, category: str, id: int):
 def get_challenge(db: Session, number: int, name: str):
     challenge = db.query(Challenges).filter((Challenges.number == number) | (Challenges.name == name)).first()
     return challenge
+
+
+# API ANTINGUA
+# def ranking_challege_by_difficulty(db: Session):
+    # diff = aliased( Difficulty )
+    # us = aliased( User )
+    # cate = aliased( Category )
+    # chall = aliased( Challenges )
+    # reach = aliased( ReachChallenges )
+
+    # subquery = (
+    #     select([
+    #         diff.name.label('dificultad'),
+    #         us.username.label('name'),
+    #         func.count(reach.id).label('progreso'),
+    #         func.coalesce(func.sum(reach.points), 0).label('puntos'),
+    #         func.row_number().over(
+    #             partition_by=diff.name,
+    #             order_by=func.coalesce(func.sum(reach.points), 0).desc()
+    #         ).label('ranking')
+    #     ])
+    #     .select_from(chall.outerjoin(reach, chall.c.id == reach.id_challenge, isouter=True)
+    #                 .outerjoin(us, us.id == reach.id_user, isouter=True)
+    #                 .outerjoin(cate, cate.id == chall.category_id)
+    #                 .outerjoin(diff, diff.id == chall.difficulty_id)
+    #     )
+    #     .where(reach.points.isnot(None))
+    #     .group_by(diff.name, us.c.username)
+    #     # .alias('RankedUsers')
+    # )
+    # main_query = (
+    #     select([subquery.c])
+    #     .where(subquery.c.ranking <= 4)
+    # )
+    # result = db.execute(main_query)

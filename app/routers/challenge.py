@@ -8,7 +8,7 @@ from sqlalchemy.orm import Session
 from datetime import timedelta
 from decouple import config
 from app.utils.hashing import Hash
-from app.services.challenge import bring_challanges_by_category, service_new_challenge, bring_challenge, bring_challanges_by_user
+from app.services.challenge import bring_challanges_by_category, service_new_challenge, bring_challenge, bring_challanges_by_user, bring_ranking_challenges_by_difficulty
 import json
 from app.schemas.schemas import SchemaChallenge
 
@@ -48,3 +48,11 @@ def search_challenge_by_user( category: str, db: Session = Depends(get_db), curr
                             detail='Parametro vacio')
     
     return bring_challanges_by_user( category, current_user.id, db )
+
+@router.get('/ranking', status_code=status.HTTP_200_OK)
+def search_ranking_challenge_by_user(  category: str, db: Session = Depends(get_db)):
+    if category == '':
+        raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST, 
+                            detail='Falta el parametro de Categoria')
+    
+    return bring_ranking_challenges_by_difficulty(db, category)

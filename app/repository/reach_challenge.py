@@ -21,3 +21,4 @@ def get_reach_challenge_by_user(db: Session, id: int):
 def get_reach_challenge_by_challenge(db: Session, id: int):
     dificulty = db.query(ReachChallenges).filter(ReachChallenges.id_challenge == id).first()
     return dificulty
+

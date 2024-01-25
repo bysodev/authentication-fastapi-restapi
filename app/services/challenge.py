@@ -46,6 +46,26 @@ def to_dict_list(results):
         response_data.append(challenge_dict)
     return response_data
 
+def bring_ranking_challenges_by_difficulty(db:Session, category: str):
+    result = challenge.ranking_challege_by_difficulty(db, category)
+    result_dict = {
+        category: {
+            'FACIL': [],
+            'MEDIO': [],
+            'DIFICIL': []
+        }
+    }
+    columns = result.keys()
+    for row in result:
+        row_dict = dict(zip(columns, row))
+        dificultad = row_dict['dificultad']
+      
+        # Agregar los datos al diccionario
+        result_dict[category][dificultad].append(row_dict)
+        # result_dict[dificultad][category].append(row_dict)
+
+    return result_dict
+
 def bring_challanges_by_user(category: str, id: int,  db: Session ):
     result_chall = challenge.get_challenges_by_user_and_difficulty( db, id )
     # output = [x for x in result_chall]
