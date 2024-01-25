@@ -1,3 +1,4 @@
+import datetime
 from fastapi import HTTPException, status
 from sqlalchemy.orm import Session
 from app.utils import hashing
@@ -5,10 +6,10 @@ from app.utils import gesture
 from app.utils.proccess import process_image_from_base64, get_prediction
 from app.repository import user
 from app.models import models
-from app.schemas.schemas import UserInDB, Lesson
+from app.schemas.schemas import User_lesson, UserInDB, Lesson
 from app.models.models import User
 
-model_path = "./model/sign_language_recognizer_25-04-2023.task"
+model_path = "./model/gesture_recognizer.task"
 gesture_recognition = gesture.GestureRecognitionService(model_path)
 
 class UserAlreadyExistsException(Exception):
@@ -79,7 +80,8 @@ def authenticate_user_verify(db: Session, username: str, password: str):
     return userData
 
 def validar_lesson( lesson: Lesson ):
-    imagen = process_image_from_base64(lesson.imagen)
-    result = gesture_recognition.get_gesture_prediction(imagen)   
+    image = process_image_from_base64(lesson.image)
+    # result = get_prediction(image)   
+    result = gesture_recognition.get_gesture_prediction(image)   
     print(result)
     return result

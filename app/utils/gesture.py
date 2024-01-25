@@ -10,20 +10,24 @@ class GestureRecognitionService:
             base_options=mp.tasks.BaseOptions(model_asset_path=model_path),
             running_mode=mp.tasks.vision.RunningMode.IMAGE
         )
-        return mp.tasks.vision.GestureRecognizer.create_from_options(options)
+        recognizer = mp.tasks.vision.GestureRecognizer.create_from_options(options)
+        return recognizer
 
-    def get_gesture_prediction(self, image_base64):
+    def get_gesture_prediction(self, base64):
         """
         Get a gesture prediction from an image.
         Returns a dictionary with the result or None if no gesture is recognized.
         """
         try:
-            frame = cv2.imdecode(image_base64, cv2.IMREAD_COLOR)
-            mp_image = mp.Image(image_format=mp.ImageFormat.SRGB, data=frame)
+            # Decodificar la cadena base64
+            # frame = cv2.imdecode(image_base64, cv2.IMREAD_COLOR)
+            # Agregar una impresión para verificar el tamaño de la imagen
+            mp_image = mp.Image(image_format=mp.ImageFormat.SRGB, data=base64)
             results = self.recognizer.recognize(mp_image)
             if results.gestures:
                 return {"result": results.gestures[0][0].category_name}
             else:
                 return None
         except Exception as e:
+            print(f"Error: {str(e)}")
             raise ValueError(f"Error al procesar la imagen y obtener la predicción: {str(e)}")
