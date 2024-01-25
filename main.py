@@ -27,7 +27,7 @@ origins = [
     "http://127.0.0.1:3000",
     "http://localhost",
     "http://127.0.0.1",
-    # "*",
+    "*",
 ]
 
 # GZip middleware
@@ -51,21 +51,12 @@ def create_tables():
 
 create_tables()
 
-origins = [
-    "http://localhost:3000",
-    "http://127.0.0.1:3000",
-    "http://localhost",
-    "http://127.0.0.1",
-    "*",
-    
-]
 app.add_middleware(
     CORSMiddleware,
-    allow_origins=origins,
-    allow_credentials=True,
-    allow_methods=["*"],
-    allow_headers=["*"],
-    expose_headers=["set-cookie"]
+    allow_origins=origins,  # List of origins allowed
+    allow_credentials=True,  # Allow cookies to be sent with requests
+    allow_methods=["*"],  # Allow all methods
+    allow_headers=["*"],  # Allow all headers
 )
 
 routers = [user.router, challenge.router, reach_challenge.router, category.router, difficulty.router, lesson.router, section.router]
