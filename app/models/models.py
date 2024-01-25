@@ -38,8 +38,9 @@ class User_lesson(Base):
     id = Column(Integer, primary_key=True, autoincrement=True)
     id_user = Column( Integer, ForeignKey('user.id') )
     id_lesson = Column( Integer, ForeignKey('lesson.id') )
-    points_reached = Column( Numeric )
     state_id = Column( Integer, ForeignKey('state.id') )
+    points_reached = Column( Numeric )
+    last_points_reached = Column( Numeric )
     fails = Column( Integer )
     detail_fails = Column(ARRAY(String, dimensions=1))  # Cambiado a ARRAY
     time_creation = Column( DateTime, default=datetime.now)

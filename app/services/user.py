@@ -8,6 +8,9 @@ from app.repository import user
 from app.models import models
 from app.schemas.schemas import User_lesson, UserInDB, Lesson
 from app.models.models import User
+from decouple import config
+from datetime import timedelta
+from app.utils.hashing import Hash
 
 model_path = "./model/gesture_recognizer.task"
 gesture_recognition = gesture.GestureRecognitionService(model_path)
@@ -33,7 +36,7 @@ def service_new_user(new_user, db: Session):
             return { "username": new_user.username, "token": verify_hash }
     except Exception as e:
         raise HTTPException(
-            status_code=status.HTTP_400_BAD_REQUEST,
+            status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
             detail=f"Error al crear el usuario {e}"
         )
 
@@ -83,5 +86,34 @@ def validar_lesson( lesson: Lesson ):
     image = process_image_from_base64(lesson.image)
     # result = get_prediction(image)   
     result = gesture_recognition.get_gesture_prediction(image)   
-    print(result)
     return result
+
+def authenticate_and_create_token(db: Session, username: str, password: str):
+        user = authenticate_user(db, username, password)
+        if not user:
+            raise HTTPException(
+                status_code=status.HTTP_400_BAD_REQUEST,
+                detail="Usuario o contraseña incorrectos",
+                headers={'WWW.Authenticate': 'Bearer'}
+            )
+        user = authenticate_user_verify(db, username, password)
+        if not user:
+            raise HTTPException(
+                status_code=status.HTTP_401_UNAUTHORIZED,
+                detail="Tu cuenta no está verificada"
+            )
+
+        access_token_expire = timedelta(minutes=int(config('ACCESS_TOKEN_EXPIRE_MINUTES')))
+        access_token = Hash.create_access_token(
+            data={'name': user.username, 'email': user.email},
+            expires_delta=access_token_expire
+        )
+
+        return {
+            'message': "Has iniciado sesión correctamente",
+            'accessToken': access_token,
+            'creation': user.creation.strftime("%Y-%m-%d"),
+            'username': user.username,
+            'email': user.email,
+            'id': user.id
+        }

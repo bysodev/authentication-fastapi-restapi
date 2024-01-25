@@ -2,7 +2,6 @@ from sqlalchemy.orm import Session
 from app.models.models import Category
 
 def create_category(new_category: Category , db:Session):
-    print(f'Vamos a insertar la nueva categoria: {new_category}')
     db.add(new_category)
     db.commit()
     db.refresh(new_category)

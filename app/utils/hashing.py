@@ -58,5 +58,5 @@ class Hash():
     
     async def get_current_active_user(current_user = Depends(get_current_user)):
         if current_user.estado:
-            raise HTTPException(status_code=400, detail='Inactive user')
+            raise HTTPException(status_code=status.HTTP_401_UNAUTHORIZED, detail='Usuario inactivo')
         return {"id": current_user.id, "username": current_user.username, "email": current_user.email, "creation": current_user.creation.strftime("%Y-%m-%d")}

@@ -47,7 +47,6 @@ def to_dict_list(results):
     return response_data
 
 def bring_challanges_by_user(category: str, id: int,  db: Session ):
-    print('Hola mundo')
     result_chall = challenge.get_challenges_by_user_and_difficulty( db, id )
     # output = [x for x in result_chall]
     output = []
@@ -70,7 +69,6 @@ def bring_challanges_by_user(category: str, id: int,  db: Session ):
                 'puntos': puntos
             })
 
-    print(categoria_data)
     # output = [jsonable_encoder(x) for x in result_chall]
     try:
         return categoria_data
@@ -82,7 +80,6 @@ def bring_challanges_by_user(category: str, id: int,  db: Session ):
     
 
 def bring_challanges_by_userDSA(category: str, id: int,  db: Session ):
-    print('Hola mundo')
     result_chall = challenge.get_challenges_by_user( db, category.upper(), id )
     # output = [x for x in result_chall]
     output = []

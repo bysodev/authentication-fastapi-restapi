@@ -1,21 +1,46 @@
-from fastapi import Depends, FastAPI, HTTPException, status
+from fastapi import FastAPI, HTTPException
 from fastapi.middleware.cors import CORSMiddleware
-# ''' Necesario para temas de nuestros tokens '''
-# from fastapi.security import OAuth2PasswordBearer, OAuth2PasswordRequestForm 
-# from pydantic import BaseModel
-# from datetime import datetime, timedelta
-# from jose import JWTError, jwt 
-# from decouple import config
-from app.routers import user, challenge, category, difficulty, reach_challenge
-from app.db.database import Base,engine
-
-
-
-
-# from passlib.context import CryptoContext
- 
-
+from fastapi.responses import JSONResponse
+from fastapi.middleware.gzip import GZipMiddleware
+from fastapi.middleware.httpsredirect import HTTPSRedirectMiddleware
+from fastapi.middleware.trustedhost import TrustedHostMiddleware
+from fastapi.security import OAuth2PasswordBearer
+from config import settings
+from app.routers import lesson, section, user, challenge, category, difficulty, reach_challenge
+from app.db.database import Base, engine
 app = FastAPI()
+
+@app.exception_handler(HTTPException)
+async def http_exception_handler(request, exc):
+    return JSONResponse(
+        status_code=exc.status_code,
+        content={"detail": str(exc.detail)},
+    )
+
+@app.get("/info")
+def read_root():
+    return {"app_name": settings.app_name, "app_description": settings.app_description}
+
+
+origins = [
+    "http://localhost:3000",
+    "http://127.0.0.1:3000",
+    "http://localhost",
+    "http://127.0.0.1",
+    # "*",
+]
+
+# GZip middleware
+app.add_middleware(GZipMiddleware)
+
+# HTTPS Redirect middleware
+# app.add_middleware(HTTPSRedirectMiddleware)
+
+# Trusted Host middleware
+# app.add_middleware(TrustedHostMiddleware, allowed_hosts=origins)
+
+# OAuth2 password bearer
+oauth2_scheme = OAuth2PasswordBearer(tokenUrl="token")
 
 def create_tables():
     try:
@@ -26,14 +51,7 @@ def create_tables():
 
 create_tables()
 
-origins = [
-    "http://localhost:3000",
-    "http://127.0.0.1:3000",
-    "http://localhost",
-    "http://127.0.0.1",
-    "*",
- 
-]
+
 app.add_middleware(
     CORSMiddleware,
     allow_origins=origins,
@@ -42,25 +60,7 @@ app.add_middleware(
     allow_headers=["*"],
     expose_headers=["set-cookie"]
 )
-app.include_router(user.router)
-app.include_router(challenge.router )
-app.include_router(reach_challenge.router )
-app.include_router(category.router )
-app.include_router(difficulty.router )
 
-#---------------------------------- 
-
-# class Data(BaseModel):
-#     name: str
- 
-# @app.get('/prueba') 
-# async def prueba():
-#     return config('SECRET_KEY')
-
-# @app.post('/receive')
-# async def receive(data: Data): 
-#     return {'data': data}
-
-# @app.get("/test/{item_id}")
-# async def test(item_id: str, query: int): # http://localhost:8000/test/Bryan?query=21
-#     return {'Hello': item_id} 
+routers = [user.router, challenge.router, reach_challenge.router, category.router, difficulty.router, lesson.router, section.router]
+for router in routers:
+    app.include_router(router)

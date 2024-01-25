@@ -5,8 +5,6 @@ from app.models import models
 
 def service_new_category(new_category, db: Session):
     category_dict = new_category.dict()
-    print( category_dict )
-
     try:
         new_category = models.Category(**category_dict)
        

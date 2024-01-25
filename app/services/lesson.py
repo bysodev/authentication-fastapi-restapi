@@ -51,6 +51,18 @@ def service_get_all(db: Session):
         return lesson.get_all(db)
     except Exception as e:
         raise HTTPException(
-            status_code=status.HTTP_400_BAD_REQUEST,
+            status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
+            detail=f"Ha ocurrido un error inesperado {e}"
+        )
+
+def service_get_state_by_user_lesson(id_lesson: int, id_user: int, db: Session):
+    try:
+        user_lesson_instance = lesson.get_state_by_user_lesson(id_lesson, id_user, db)
+        if user_lesson_instance is None:
+            return 2
+        return user_lesson_instance.User_lesson.state_id
+    except Exception as e:
+        raise HTTPException(
+            status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
             detail=f"Ha ocurrido un error inesperado {e}"
         )

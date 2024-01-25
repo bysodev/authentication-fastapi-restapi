@@ -1,22 +1,19 @@
 from decouple import config
 from sqlalchemy import create_engine
-from sqlalchemy.orm import declarative_base
-from sqlalchemy.orm import sessionmaker
+from sqlalchemy.orm import declarative_base, sessionmaker
+from sqlalchemy.orm.session import Session
+DATABASE_URL: str = config('DATABASE_URL')
 
-DATA_BASE = config('DATABASE_URL')
-
-engine = create_engine(DATA_BASE)
+engine = create_engine(DATABASE_URL)
 SessionLocal = sessionmaker(bind=engine, autocommit=False, autoflush=False)
 Base = declarative_base()
 
-Base.metadata.drop_all(bind=engine)
-Base.metadata.create_all(bind=engine)
+def create_tables() -> None:
+    Base.metadata.create_all(bind=engine)
 
-from app.models.models import User
+def drop_tables() -> None:
+    Base.metadata.drop_all(bind=engine)
 
-def get_db():
-    db = SessionLocal()
-    try:
+def get_db() -> Session:
+    with SessionLocal() as db:
         yield db 
-    finally:
-        db.close()

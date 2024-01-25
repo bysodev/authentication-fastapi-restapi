@@ -96,7 +96,7 @@ class User_lesson(BaseModel):
     points_reached: int
     state_id: int
     fails: int
-    detail_fails: List[str] 
+    detail_fails: List[str | int] 
 
 class Section(BaseModel):
     name: str

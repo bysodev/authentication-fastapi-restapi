@@ -46,6 +46,5 @@ def search_challenge_by_user( category: str, db: Session = Depends(get_db), curr
     if category == '':
         raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST, 
                             detail='Parametro vacio')
-    print('Si pasamos')
     
     return bring_challanges_by_user( category, current_user.id, db )
