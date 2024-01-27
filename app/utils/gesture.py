@@ -38,8 +38,8 @@ class GestureRecognitionService:
             for handedness in results.multi_handedness:
                 if handedness.classification[0].label == "Left":
                     image_np = flip_horizontal(image_np)
-            # Convert the image from BGR to RGB
-            mp_image = cv2.cvtColor(image_np, cv2.COLOR_BGR2RGB)
+            # Resize
+            image_np = cv2.resize(image_np, (480, 480))
             # Create an mp.Image object from the numpy array
             mp_image = mp.Image(image_format=mp.ImageFormat.SRGB, data=mp_image)
             results = self.recognizer.recognize(mp_image)
@@ -52,5 +52,5 @@ class GestureRecognitionService:
                 return None  
                       
         except Exception as e:
-            print(f"Error: {str(e)}")
+            hands.close()
             raise ValueError(f"Error al procesar la imagen y obtener la predicción: {str(e)}")
