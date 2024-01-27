@@ -29,7 +29,7 @@ origins = [
     "http://127.0.0.1:3000",
     "http://localhost",
     "http://127.0.0.1",
-    "*",
+    "https://sogo-sign.vercel.app",
 ]
 
 # GZip middleware
