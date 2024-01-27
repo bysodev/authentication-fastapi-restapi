@@ -10,10 +10,7 @@ from app.services.user import (
     authenticate_and_create_token,
     service_new_user,
     service_verified_user,
-    authenticate_user,
-    authenticate_user_provider,
     validar_lesson,
-    authenticate_user_verify,
 )
 
 router = APIRouter(
@@ -43,7 +40,8 @@ def new_user(user: User, db: Session = Depends(get_db)):
         content={
             "data": user_created,
             "message": "Usuario creado exitosamente"
-        }
+        },
+        status_code=201
     )
 
 @router.get('/verified', status_code=status.HTTP_200_OK)
@@ -59,7 +57,6 @@ def verify_user(token: str, db: Session = Depends(get_db)):
         dict: Response data.
     """
     user = service_verified_user(token, db)
-
     if user == True:
         raise HTTPException(
             status_code=status.HTTP_401_UNAUTHORIZED,
@@ -70,12 +67,9 @@ def verify_user(token: str, db: Session = Depends(get_db)):
             status_code=status.HTTP_400_BAD_REQUEST,
             detail='Token de verificación incorrecto'
         )
-    return JSONResponse(
-        content={
-            "data": user,
-            "message": "Usuario verificado exitosamente"
-        }
-    )
+    return {"respuesta":"Usuario verificado exitosamente"}
+
+
 
 @router.post('/login', status_code=status.HTTP_200_OK)
 async def login_for_access_token(form_data: OAuth2PasswordRequestForm = Depends(), db: Session = Depends(get_db)):

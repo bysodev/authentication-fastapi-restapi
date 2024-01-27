@@ -2,49 +2,58 @@
 import cv2
 import base64
 import numpy as np
-import mediapipe as mp
-from mediapipe.tasks import python
-from mediapipe.tasks.python import vision
 
-
-model_path = "./model/gesture_recognizer.task"
-# STEP 2: Create an GestureRecognizer object.
-base_options = python.BaseOptions(model_asset_path=model_path)
-options = vision.GestureRecognizerOptions(base_options=base_options)
-recognizer = vision.GestureRecognizer.create_from_options(options)
-
-def print_result(result, output_image: mp.Image):
+def process_image_from_base64(base64_image):
     try:
-        print('Resultado: {}'.format(result.gestures[0][0].category_name))
-    except:
-        print(f"Error al obtener la categoría clasificada: {str(result)}")
-        return None
-
-
-def process_image_from_base64(image_base64):
-    try:
-        # Verifica que la cadena comience con "data:image/"
-        if not image_base64.startswith("data:image/"):
-            raise ValueError("No es una URL de datos válida")
-        # Extrae el tipo de contenido
-        content_type = image_base64.split(";")[0].replace("data:image/", "")
-        # Verifica que el tipo de contenido sea compatible
-        if content_type not in ["jpeg", "jpg", "png"]:
-            raise ValueError(f"Tipo de contenido no compatible: {content_type}")
-        # Elimina los encabezados "data:image/<tipo_de_contenido>;base64,"
-        base64_data = image_base64.split(",")[1]
-        # Decodifica la cadena base64 y devuelve los bytes
-        image_bytes = base64.b64decode(base64_data)
-        image_np = cv2.imdecode(np.frombuffer(image_bytes, dtype=np.uint8), cv2.IMREAD_COLOR)
-        return image_np
+        # Remove metadata if present
+        if "base64," in base64_image:
+            base64_image = base64_image.split("base64,")[1]
+        # Decode the base64 image
+        image_data = base64.b64decode(base64_image)
+        # Convert the image data to a numpy array
+        image_data = np.frombuffer(image_data, dtype=np.uint8)
+        # Load the image from the numpy array
+        image = cv2.imdecode(image_data, cv2.IMREAD_UNCHANGED)
+        return image
     except Exception as e:
         print(f"Error al obtener los bytes de la imagen: {str(e)}")
         return None
+    
+def normalize(image):
+    return image / 255.0
 
-def get_prediction(image):
-    # Decodifica el arreglo de NumPy a una imagen
-    frame = cv2.imdecode(image, cv2.IMREAD_COLOR)
-    mp_image = mp.Image(image_format=mp.ImageFormat.SRGB, data=frame)
-    results = recognizer.recognize(mp_image)
-    print_result(results, mp_image)
-    return None
+def resize(image, width=446, height=446):
+    return cv2.resize(image, (width, height))
+
+def subtract_background(image):
+    fgbg = cv2.createBackgroundSubtractorMOG2()
+    fgmask = fgbg.apply(image)
+    return fgmask
+
+def improve_lighting(image_np):
+    # Check if the image is already grayscale
+    if image_np.ndim == 2 or image_np.shape[2] == 1:
+        gray = image_np
+    else:
+        # Convert the image to grayscale
+        gray = cv2.cvtColor(image_np, cv2.COLOR_BGR2GRAY)
+    # Apply histogram equalization
+    equalized = cv2.equalizeHist(gray)
+    # Convert back to BGR
+    improved = cv2.cvtColor(equalized, cv2.COLOR_GRAY2BGR)
+    return improved
+
+def segment_hand(image):
+    # Convert the image to HSV color space
+    hsv = cv2.cvtColor(image, cv2.COLOR_BGR2HSV)
+    # Define range for skin color in HSV
+    lower_skin = np.array([0, 20, 70], dtype=np.uint8)
+    upper_skin = np.array([20, 255, 255], dtype=np.uint8)
+    # Threshold the HSV image to get only skin colors
+    mask = cv2.inRange(hsv, lower_skin, upper_skin)
+    # Bitwise-AND mask and original image
+    res = cv2.bitwise_and(image, image, mask=mask)
+    return res
+
+def flip_horizontal(image):
+    return cv2.flip(image, 1)

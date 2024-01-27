@@ -1,9 +1,10 @@
 import datetime
 from fastapi import HTTPException, status
+import numpy as np
 from sqlalchemy.orm import Session
 from app.utils import hashing
 from app.utils import gesture
-from app.utils.proccess import process_image_from_base64, get_prediction
+from app.utils.proccess import improve_lighting, normalize, process_image_from_base64, resize, segment_hand, subtract_background
 from app.repository import user
 from app.models import models
 from app.schemas.schemas import User_lesson, UserInDB, Lesson
@@ -33,13 +34,12 @@ def service_new_user(new_user, db: Session):
 
         if not user.get_user_by_name_or_email(new_user, db):
             user.create_user(new_user, db)
-            return { "username": new_user.username, "token": verify_hash }
+            return { "username": new_user.username, "token": str(verify_hash) }
     except Exception as e:
         raise HTTPException(
             status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
             detail=f"Error al crear el usuario {e}"
         )
-
 
 def service_verified_user(token: str, db: Session):
     try:
@@ -84,7 +84,6 @@ def authenticate_user_verify(db: Session, username: str, password: str):
 
 def validar_lesson( lesson: Lesson ):
     image = process_image_from_base64(lesson.image)
-    # result = get_prediction(image)   
     result = gesture_recognition.get_gesture_prediction(image)   
     return result
 
