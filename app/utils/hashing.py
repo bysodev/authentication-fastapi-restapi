@@ -31,7 +31,7 @@ class Hash():
         if expires_delta:
             expire = datetime.utcnow() + expires_delta
         else:
-            expire = datetime.utcnow * timedelta(minutes=30)
+            expire = datetime.utcnow() + timedelta(minutes=30)
         iat = datetime.utcnow()
 
         to_encode.update({ 
@@ -53,10 +53,9 @@ class Hash():
                 raise HTTPException(status_code=status.HTTP_401_UNAUTHORIZED, detail='Usuario no encontrado', headers={'WWW.Authenticate': 'Bearer'})
             return user
         except JWTError as e:
-            print(f"JWTError: {e.__class__.__name__} - {str(e)}")
             raise HTTPException(status_code=status.HTTP_401_UNAUTHORIZED, detail='No se pudieron validar las credenciales', headers={'WWW.Authenticate': 'Bearer'})
     
     async def get_current_active_user(current_user = Depends(get_current_user)):
-        if current_user.estado:
+        if not current_user.active:
             raise HTTPException(status_code=status.HTTP_401_UNAUTHORIZED, detail='Usuario inactivo')
-        return {"id": current_user.id, "username": current_user.username, "email": current_user.email, "creation": current_user.creation.strftime("%Y-%m-%d")}
+        return {"id": current_user.id, "username": current_user.username, "email": current_user.email, "image": current_user.image, "creation": current_user.creation.strftime("%Y-%m-%d")}

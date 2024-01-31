@@ -46,9 +46,6 @@ class GestureRecognitionService:
             image_np = cv2.resize(image_np, (240, 240))
             # Create an mp.Image object from the numpy array
             mp_image = mp.Image(image_format=mp.ImageFormat.SRGB, data=mp_image)
-            # Create a temporary file and save the image
-            temp_image_file = tempfile.NamedTemporaryFile(suffix=".png", delete=False)
-            cv2.imwrite(temp_image_file.name, mp_image)
             results = self.recognizer.recognize(mp_image)
             if results.gestures:
                 print(results.gestures[0][0].category_name)
