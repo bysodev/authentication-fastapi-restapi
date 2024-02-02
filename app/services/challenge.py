@@ -1,10 +1,21 @@
 from fastapi import HTTPException, status, Depends
 from fastapi.encoders import jsonable_encoder
-from app.utils.hashing import Hash
+from app.utils import gesture
 from sqlalchemy.orm import Session
 from app.repository import challenge
 from app.models import models
+from app.schemas.schemas import PredictSign
+from app.utils.proccess import process_image_from_base64
 import json
+
+model_path = "./model/gesture_recognizer.task"
+gesture_recognition = gesture.GestureRecognitionService(model_path)
+
+def validar_challenge( lesson: PredictSign ):
+    image = process_image_from_base64(lesson.image)
+    # result = get_prediction(image)   
+    result = gesture_recognition.get_gesture_prediction(image)   
+    return '6'
 
 def service_new_challenge(new_challenge, db: Session):
     challenge_dict = new_challenge.dict()
@@ -27,6 +38,15 @@ def bring_challenge(db: Session):
         raise HTTPException(
             status_code=status.HTTP_400_BAD_REQUEST,
             detail=f"Error al hacer la busqueda de los retos {e}"
+        )
+    
+def bring_challenge_id(id: int, db: Session):
+    try:
+        return challenge.get_challenge_id( id, db )
+    except Exception as e:
+        raise HTTPException(
+            status_code=status.HTTP_400_BAD_REQUEST,
+            detail=f"Error al hacer la busqueda del reto {e}"
         )
 
 def bring_challanges_by_category( db: Session, category: str ):
@@ -65,6 +85,10 @@ def bring_ranking_challenges_by_difficulty(db:Session, category: str):
         # result_dict[dificultad][category].append(row_dict)
 
     return result_dict
+
+def start_challanges_by_user(category: str, difficulty: str, id: int, db:Session):
+    result = challenge.start_challenge(category, difficulty, id, db)
+    return result
 
 def bring_challanges_by_user(category: str, id: int,  db: Session ):
     result_chall = challenge.get_challenges_by_user_and_difficulty( db, id )

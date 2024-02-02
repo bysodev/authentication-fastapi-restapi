@@ -10,11 +10,8 @@ class SchemaCategory(BaseModel):
     name: str
 
 class SchemaReachChallenges(BaseModel):
-    id_user: int
     id_challenge: int
     points: float
-    bonus: int
-    end_points: float
     minutes: int
     seconds: int
     fails: int
@@ -95,6 +92,12 @@ class User_lesson(BaseModel):
     id_lesson: int
     points_reached: int
     state_id: int
+    fails: int
+    detail_fails: List[str | int] 
+
+class User_challenge(BaseModel):
+    id_challenge: int
+    points_reached: int
     fails: int
     detail_fails: List[str | int] 
 
