@@ -13,3 +13,4 @@ cvzone
 mediapipe
 python-multipart
 bcrypt
+pydantic_settings

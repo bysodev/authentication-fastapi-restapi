@@ -1,4 +1,4 @@
-from fastapi import FastAPI, HTTPException
+from fastapi import FastAPI, HTTPException, Request, Response
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi.responses import JSONResponse
 from fastapi.middleware.gzip import GZipMiddleware
@@ -8,6 +8,8 @@ from fastapi.security import OAuth2PasswordBearer
 from config import settings
 from app.routers import lesson, section, user, challenge, category, difficulty, reach_challenge
 from app.db.database import Base, engine
+from starlette.middleware.base import BaseHTTPMiddleware
+
 app = FastAPI()
 
 @app.exception_handler(HTTPException)
@@ -27,7 +29,7 @@ origins = [
     "http://127.0.0.1:3000",
     "http://localhost",
     "http://127.0.0.1",
-    # "*",
+    "https://sogo-sign.vercel.app",
 ]
 
 # GZip middleware
@@ -38,6 +40,21 @@ app.add_middleware(GZipMiddleware)
 
 # Trusted Host middleware
 # app.add_middleware(TrustedHostMiddleware, allowed_hosts=origins)
+
+class CustomCORSMiddleware(BaseHTTPMiddleware):
+    async def dispatch(self, request: Request, call_next):
+        if 'origin' in request.headers:
+            origin = request.headers['origin']
+        else:
+            origin = "*"
+
+        response = Response()
+        response = await call_next(request)
+        response.headers['Access-Control-Allow-Origin'] = origin
+        response.headers['Access-Control-Allow-Credentials'] = 'true'
+        return response
+
+app.add_middleware(CustomCORSMiddleware)
 
 # OAuth2 password bearer
 oauth2_scheme = OAuth2PasswordBearer(tokenUrl="token")
@@ -51,19 +68,12 @@ def create_tables():
 
 # create_tables()
 
-origins = [
-    "http://localhost:3000",
-    "http://127.0.0.1:3000",
-    "http://localhost",
-    "http://127.0.0.1",
-]
 app.add_middleware(
     CORSMiddleware,
-    allow_origins=origins,
-    allow_credentials=True,
-    allow_methods=["*"],
-    allow_headers=["*"],
-    expose_headers=["set-cookie"]
+    allow_origins=origins,  # List of origins allowed
+    allow_credentials=True,  # Allow cookies to be sent with requests
+    allow_methods=["*"],  # Allow all methods
+    allow_headers=["*"],  # Allow all headers
 )
 
 routers = [user.router, challenge.router, reach_challenge.router, category.router, difficulty.router, lesson.router, section.router]
