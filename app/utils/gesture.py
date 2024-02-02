@@ -1,3 +1,4 @@
+import tempfile
 import cv2
 import mediapipe as mp
 import numpy as np
@@ -31,26 +32,25 @@ class GestureRecognitionService:
             mp_image = cv2.cvtColor(image_np, cv2.COLOR_BGR2RGB) 
             # Process the image and detect hands.
             # Convert the image from BGR to RGB
-            results = hands.process(cv2.cvtColor(image_np, cv2.COLOR_BGR2RGB))
+            results = hands.process(mp_image)
+            # Close MediaPipe Hands.
+            hands.close()
             # Print handedness and draw hand landmarks on the image.
             if not results.multi_hand_landmarks:
+                print("No se detectaron manos en la imagen")
                 return None
             for handedness in results.multi_handedness:
                 if handedness.classification[0].label == "Left":
                     image_np = flip_horizontal(image_np)
-            # Convert the image from BGR to RGB
-            mp_image = cv2.cvtColor(image_np, cv2.COLOR_BGR2RGB)
+            # Resize
+            image_np = cv2.resize(image_np, (240, 240))
             # Create an mp.Image object from the numpy array
             mp_image = mp.Image(image_format=mp.ImageFormat.SRGB, data=mp_image)
             results = self.recognizer.recognize(mp_image)
-            # Close MediaPipe Hands.
-            hands.close()
             if results.gestures:
                 print(results.gestures[0][0].category_name)
                 return {"result": results.gestures[0][0].category_name}
             else:
                 return None  
-                      
         except Exception as e:
-            print(f"Error: {str(e)}")
             raise ValueError(f"Error al procesar la imagen y obtener la predicción: {str(e)}")

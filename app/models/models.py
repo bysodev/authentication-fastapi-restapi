@@ -4,6 +4,16 @@ from sqlalchemy.orm import relationship
 from datetime import datetime
 import enum
 
+class Provider(Base):
+    __tablename__ = 'provider'
+    id = Column(Integer, primary_key=True, autoincrement=True)
+    provider_name = Column(String(255))
+    provider_id = Column(String(255))
+    user_id = Column(Integer, ForeignKey('user.id'), unique=True)  # Make this a unique field
+
+    # Relationship to User
+    user = relationship('User', back_populates='provider', uselist=False)  # Set uselist=False for one-to-one
+
 class User(Base):
     __tablename__ = 'user'
     id = Column(Integer, primary_key=True, autoincrement=True)
@@ -11,11 +21,15 @@ class User(Base):
     email = Column(String(255))
     password = Column(String(255))
     token = Column(String(255), default="")
-    refresh = Column(String(255), default="")
-    creation = Column( DateTime, default=datetime.now)
-    update = Column( DateTime, default=datetime.now, onupdate=datetime.now)
-    estado = Column( Boolean, default=False)
-    verified = Column( Boolean, default=False)
+    image = Column(String(255), default="")
+    active = Column(Boolean, default=True)
+    verified = Column(Boolean, default=False)
+    recovery_password = Column(String(255), default="")  # New field for recovery password
+    creation = Column(DateTime, default=datetime.now)
+    update = Column(DateTime, default=datetime.now, onupdate=datetime.now)
+
+    # Relationship to Provider
+    provider = relationship('Provider', back_populates='user', uselist=False)  # Set uselist=False for one-to-one
 
 class Lesson(Base):
     __tablename__ = 'lesson'

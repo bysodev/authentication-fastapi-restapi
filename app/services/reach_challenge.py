@@ -3,13 +3,32 @@ from sqlalchemy.orm import Session
 from app.repository import reach_challenge
 from app.models import models
 from app.utils.hashing import Hash
+from app.services.challenge import bring_challenge_id
 
 def service_new_reach_challenge(new_reach_challenge, db: Session):
-    reach_challenge_dict = new_reach_challenge.dict()
+    reach_challenge_dict = new_reach_challenge
+    print(reach_challenge_dict)
+    challenge, difficulty = bring_challenge_id(reach_challenge_dict['id_challenge'], db)
+    porcentaje = (reach_challenge_dict['points'] / challenge.points) * 100
+    print(porcentaje)
+    print(difficulty.bonus)
+    bonus = 0
+    end_points = 0
+    if porcentaje > 75 :
+        print('Si entro')
+        bonus = difficulty.bonus
+        end_points = reach_challenge_dict['points'] + bonus
+
+    new_user_challenge = {
+        "bonus": bonus,
+        "end_points": end_points,
+        **new_reach_challenge
+    }
+    print(new_user_challenge)
     try:
-        new_reach_challenge = models.ReachChallenges(**reach_challenge_dict)
+        new_reach_challenge = models.ReachChallenges(**new_user_challenge)
         reach_challenge.create_reach_challenge(new_reach_challenge, db)
-        return reach_challenge_dict
+        return new_user_challenge
     except Exception as e:
         raise HTTPException(
             status_code=status.HTTP_400_BAD_REQUEST,
