@@ -149,9 +149,6 @@ def verify_user(token: str, db: Session = Depends(get_db)):
         )
     return {"respuesta":"Usuario verificado exitosamente"}
 
-
-
-
 @router.get('/users/me')
 async def read_users_me(current_user=Depends(Hash.get_current_active_user)):
     """

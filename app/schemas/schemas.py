@@ -54,6 +54,8 @@ class User(BaseModel):
 class UserUpdate(BaseModel):
     username: Optional[str] = None
     image: Optional[str] = None
+    currentPassword: Optional[str] = None
+    password: Optional[str] = None
 
 class RecoveryRequest(BaseModel):
     email: str

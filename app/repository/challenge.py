@@ -13,28 +13,28 @@ def get_challenges(db: Session):
 
 def ranking_challege_by_difficulty(db: Session, category: str):
 
-    stmt = text("WITH RankedUsers AS ( SELECT diff.name AS dificultad, us.username,  COUNT(reach.id) AS progreso, COALESCE(SUM(reach.points), 0) AS puntos, ROW_NUMBER() OVER (PARTITION BY diff.name ORDER BY COALESCE(SUM(reach.points), 0) DESC) AS ranking"
+    stmt = text("WITH RankedUsers AS ( SELECT diff.name AS dificultad, us.username, us.image, COUNT(reach.id) AS retos, COALESCE(SUM(reach.points), 0) + COALESCE(SUM(CASE WHEN les.last_points_reached > 0 THEN (les.points_reached + les.last_points_reached) / 2 ELSE les.points_reached END), 0) AS puntos, ROW_NUMBER() OVER (PARTITION BY diff.name ORDER BY COALESCE(SUM(reach.points), 0) + COALESCE(SUM(CASE WHEN les.last_points_reached > 0 THEN (les.points_reached + les.last_points_reached) / 2 ELSE les.points_reached END), 0) DESC) AS ranking, COUNT(les.id) AS lecciones"
             " FROM public.challenges AS chall"
             " LEFT JOIN public.reach_challenges AS reach ON chall.id = reach.id_challenge"
             " LEFT JOIN public.user AS us ON us.id = reach.id_user"
+            " LEFT JOIN public.user_lesson AS les ON us.id = les.id_user"
             " JOIN public.category AS cate ON chall.category_id = cate.id AND cate.name=:categoria "
             " JOIN public.difficulty AS diff ON chall.difficulty_id = diff.id"
             "    WHERE reach.points IS NOT NULL"
-            " GROUP BY diff.name, us.username)"
+            " GROUP BY diff.name, us.username, us.image)"
         " SELECT ran.*"
         " FROM RankedUsers as ran"
-        " WHERE ranking <= 4;").\
+        " WHERE ranking <= 5;").\
         bindparams(categoria=category)
-    
-    # stmt.bindparams(param=category)
-    
+        
     stmt.columns(
         column('dificultad', String),
         column('username', String),
-        column('progreso', Integer),
-        column('puntos', Numeric)
+        column('image', String),
+        column('retos', Integer),
+        column('puntos', Numeric),
+        column('lecciones', Integer)
     )
-
     result = db.execute(stmt)
     return result
 
