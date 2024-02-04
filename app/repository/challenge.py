@@ -1,11 +1,20 @@
 from sqlalchemy.orm import Session, aliased
 from app.models.models import Challenges, ReachChallenges, Category, Difficulty, User
-from sqlalchemy import func, select, text, column, bindparam, Integer, String, Numeric
+from sqlalchemy import func, not_, select, text, column, bindparam, Integer, String, Numeric
 
 def create_challenge(new_challenge: Challenges , db:Session):
     db.add(new_challenge)
     db.commit()
     db.refresh(new_challenge)
+
+def start_challenge(category: str, difficulty: str, id: int, db: Session):
+    challenges = db.query(Challenges)\
+        .join(Category, ( Category.id == Challenges.category_id ) & ( Category.name == category ) )\
+        .join(Difficulty, ( Difficulty.id == Challenges.difficulty_id ) & ( Difficulty.name == difficulty ) )\
+        .filter( not_(  db.query(ReachChallenges).filter(ReachChallenges.id_user == id, ReachChallenges.id_challenge == Challenges.id).exists() ) )\
+        .order_by(func.random()).first()
+    print(challenges)
+    return challenges
 
 def get_challenges(db: Session):
     challenges = db.query(Challenges).all()
@@ -43,7 +52,7 @@ def get_challenges_by_category(db: Session, category: str):
     return challenges
 
 def get_challenges_by_user_and_difficulty(db: Session, id: int):
-    challenges = db.query(Category.name.label('categoria'), Difficulty.name.label('dificultad'), func.count( Challenges.id ).label('total') , func.count( ReachChallenges.id ).label('progreso'), func.sum( Challenges.points ).label('puntos') ).outerjoin(ReachChallenges, ( Challenges.id == ReachChallenges.id_challenge ) & ( ReachChallenges.id_user == id ) ).join(Category, (Challenges.category_id == Category.id) ).join(Difficulty, (Challenges.difficulty_id == Difficulty.id)).group_by(Challenges.category_id, Category.name, Difficulty.name) .all()
+    challenges = db.query(Category.name.label('categoria'), Difficulty.name.label('dificultad'), func.count( Challenges.id ).label('total') , func.count( ReachChallenges.id ).label('progreso'), func.sum( Challenges.points ).label('puntos') ).outerjoin(ReachChallenges, ( Challenges.id == ReachChallenges.id_challenge ) & ( ReachChallenges.id_user == id ) ).join(Category, (Challenges.category_id == Category.id) ).join(Difficulty, (Challenges.difficulty_id == Difficulty.id)).group_by(Challenges.category_id, Category.name, Difficulty.name).all()
     return challenges 
 
 def get_challenges_by_user(db: Session, category: str, id: int):
@@ -54,6 +63,10 @@ def get_challenges_by_user(db: Session, category: str, id: int):
 
 def get_challenge(db: Session, number: int, name: str):
     challenge = db.query(Challenges).filter((Challenges.number == number) | (Challenges.name == name)).first()
+    return challenge
+
+def get_challenge_id(id: int, db: Session):
+    challenge = db.query(Challenges, Difficulty ).join(Difficulty, Challenges.difficulty_id == Difficulty.id ).filter((Challenges.id == id)).first()
     return challenge
 
 

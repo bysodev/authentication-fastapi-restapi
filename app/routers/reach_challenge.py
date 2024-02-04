@@ -17,8 +17,14 @@ router = APIRouter(
 )
 
 @router.post('/register', status_code=status.HTTP_201_CREATED)
-def new_reach_challenge(reach_challange: SchemaReachChallenges, db: Session = Depends(get_db)):
-    challange_created = service_new_reach_challenge(reach_challange,db)
+def new_reach_challenge(reach_challange: SchemaReachChallenges, current_user=Depends(Hash.get_current_active_user),  db: Session = Depends(get_db)):
+    id_user = current_user['id']
+    new_user_challenge = { 
+        "id_user": id_user,
+        "state": "COMPLETADO",
+        **reach_challange.model_dump()
+    }
+    challange_created = service_new_reach_challenge(new_user_challenge,db)
     if not challange_created:
         raise HTTPException(status_code=status.HTTP_409_CONFLICT, 
                             detail='Conflictos al crear este logro de reto')
