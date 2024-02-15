@@ -4,6 +4,7 @@ import mediapipe as mp
 import numpy as np
 from PIL import Image
 import io
+import json
 
 from app.utils.proccess import flip_horizontal
 
