@@ -19,6 +19,16 @@ class SchemaReachChallenges(BaseModel):
     streak: int
     state: str
 
+class SchemaReachCustomizedChallenges(BaseModel):
+    category: str
+    difficulty: str
+    minutes_max: int
+    seconds_max: int
+    minutes: int
+    seconds: int
+    lives: int
+    fails: int
+
 class SchemaChallenge(BaseModel):
     number: int
     name: str

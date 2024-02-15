@@ -15,7 +15,7 @@ def validar_challenge( lesson: PredictSign ):
     image = process_image_from_base64(lesson.image)
     # result = get_prediction(image)   
     result = gesture_recognition.get_gesture_prediction(image)   
-    return '6'
+    return result
 
 def service_new_challenge(new_challenge, db: Session):
     challenge_dict = new_challenge.dict()

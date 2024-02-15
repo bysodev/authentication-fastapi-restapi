@@ -21,7 +21,7 @@ class User(Base):
     email = Column(String(255))
     password = Column(String(255))
     token = Column(String(255), default="")
-    image = Column(String(255), default="")
+    image = Column(String(255), default="") 
     active = Column(Boolean, default=True)
     verified = Column(Boolean, default=False)
     recovery_password = Column(String(255), default="")  # New field for recovery password
@@ -117,6 +117,26 @@ class Challenges(Base):
     def as_dict(self):
         return {column.name: getattr(self, column.name) for column in self.__table__.columns}
 
+class ReachChallengesCustomized(Base):
+    __tablename__ = 'challenges_customized'
+    id = Column(Integer, primary_key=True, autoincrement=True)
+    id_user = Column( Integer, ForeignKey('user.id') )
+    id_category = Column( Integer, ForeignKey('category.id') )
+    id_difficulty = Column( Integer, ForeignKey('difficulty.id') )
+    bonus = Column( Integer )
+    points = Column( Integer )
+    end_points = Column( Integer )
+    minutes_max = Column( Integer )
+    seconds_max = Column( Integer )
+    minutes = Column( Integer )
+    seconds = Column( Integer )
+    lives = Column( Integer ) 
+    fails = Column( Integer ) 
+    time_creation = Column( DateTime, default=datetime.now)
+    time_update = Column( DateTime, default=datetime.now, onupdate=datetime.now)
+    difficulty = relationship( 'Difficulty' )
+    category = relationship( 'Category' )
+    user = relationship( 'User')
 
 class EnumDifficulty( enum.Enum ):
     FACIL = 'FACIL'

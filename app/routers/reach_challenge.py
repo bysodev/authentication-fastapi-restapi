@@ -4,9 +4,9 @@ from app.db.database import get_db
 from sqlalchemy.orm import Session 
 from decouple import config
 from app.utils.hashing import Hash
-from app.services.reach_challenge import service_new_reach_challenge, bring_reach_challenges, bring_reach_challanges_by_id
+from app.services.reach_challenge import service_new_reach_challenge, bring_reach_challenges, bring_reach_challanges_by_id, service_new_reach_customized_challenge 
 import json
-from app.schemas.schemas import SchemaReachChallenges
+from app.schemas.schemas import SchemaReachChallenges, SchemaReachCustomizedChallenges
 
 
 websocket_clients = []
@@ -29,6 +29,22 @@ def new_reach_challenge(reach_challange: SchemaReachChallenges, current_user=Dep
         raise HTTPException(status_code=status.HTTP_409_CONFLICT, 
                             detail='Conflictos al crear este logro de reto')
     return {"respuesta":"Reach Challenge creado exitosamente", "data": challange_created}
+
+@router.post('/customized/register', status_code=status.HTTP_201_CREATED)
+def new_reach_challenge(reach_challange: SchemaReachCustomizedChallenges, current_user=Depends(Hash.get_current_active_user),  db: Session = Depends(get_db)):
+    id_user = current_user['id']
+    new_user_challenge_customized = { 
+        "id_user": id_user,
+        "state": "COMPLETADO",
+        **reach_challange.model_dump()
+    }
+    print('DESDE AQUI LO PERSONALIZADO')
+    challange_customized_created = service_new_reach_customized_challenge(new_user_challenge_customized,db)
+    print(challange_customized_created)
+    if not challange_customized_created:
+        raise HTTPException(status_code=status.HTTP_409_CONFLICT, 
+                            detail='Conflictos al crear este logro de reto')
+    return {"respuesta":"Reach Challenge Customized creado exitosamente", "data": challange_customized_created}
 
 @router.get('/all', status_code=status.HTTP_200_OK)
 def search_reach_challenges( db: Session = Depends(get_db)):

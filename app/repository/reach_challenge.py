@@ -1,10 +1,15 @@
 from sqlalchemy.orm import Session 
-from app.models.models import ReachChallenges
+from app.models.models import ReachChallenges, ReachChallengesCustomized
 
 def create_reach_challenge(new_reach_challenge: ReachChallenges , db:Session):
     db.add(new_reach_challenge)
     db.commit()
     db.refresh(new_reach_challenge)
+
+def create_reach_customized_challenge(new_reach_challenge_customized: ReachChallengesCustomized , db:Session):
+    db.add(new_reach_challenge_customized)
+    db.commit()
+    db.refresh(new_reach_challenge_customized)
 
 def get_reach_challenges(db: Session):
     challenges = db.query(ReachChallenges).all()
