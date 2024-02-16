@@ -70,8 +70,9 @@ class Section(Base):
     lessons = relationship('Lesson', back_populates='section')
 
 class EnumCategory( enum.Enum ):
-    PALABRAS = 'PALABRAS'
     NUMEROS = 'NUMEROS'
+    VOCALES = 'VOCALES'
+    PALABRAS = 'PALABRAS'
 
 class EnumState( enum.Enum ):
     BLOQUEADO = 1
