@@ -46,10 +46,11 @@ class User(Base):
 #     time_creation = Column( DateTime, default=datetime.now)
 
 class EnumCategory( enum.Enum ):
-    PALABRAS = 1
-    NUMEROS = 2
-    MIXTOS = 3
-    ESPECIALES = 4
+    NUMEROS = 1
+    VOCALES = 2
+    PALABRAS = 3
+    MIXTOS = 4
+    ESPECIALES = 5
 
 class Category(Base):
     __tablename__ = 'category'
