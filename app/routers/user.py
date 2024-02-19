@@ -284,3 +284,16 @@ async def update_user(user_update: UserUpdate, current_user=Depends(Hash.get_cur
             content={'error': str(e)}
         )
     
+
+@router.post("/refreshToken")
+async def refresh_access_token(name:str, email: str, db: Session = Depends(get_db)):
+    try:
+        body = Hash.create_access_token(
+            data={'name': name, 'email': email}
+        )
+        return JSONResponse(content={'message': "Token actualizado correctamente", 'refreshToken': body}, status_code=status.HTTP_201_CREATED)
+    except ValueError as e:
+        return JSONResponse(
+            status_code=400,
+            content={'error': str(e)}
+        )
