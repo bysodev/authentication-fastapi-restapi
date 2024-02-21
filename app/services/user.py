@@ -14,8 +14,13 @@ from decouple import config
 from datetime import timedelta, datetime
 from app.utils.hashing import Hash
 
-model_path = "./model/gesture_recognizer.task"
-gesture_recognition = gesture.GestureRecognitionService(model_path)
+# model_path = "./model/gesture_recognizer.task"
+model_path_number = "./model/gesture_recognizer_number.task"
+model_path_letter = "./model/gesture_recognizer_letters.task"
+
+# gesture_recognition = gesture.GestureRecognitionService(model_path)
+gesture_recognition_number = gesture.GestureRecognitionService(model_path_number)
+gesture_recognition_letter = gesture.GestureRecognitionService(model_path_letter)
 
 class UserAlreadyExistsException(Exception):
     pass
@@ -215,7 +220,12 @@ def authenticate_user_verify(db: Session, username: str, password: str):
 
 def validar_lesson( lesson: Lesson ):
     image = process_image_from_base64(lesson.image)
-    result = gesture_recognition.get_gesture_prediction(image)   
+    # valid if lesson.category is number or letter
+    if lesson.category.strip() == "NUMEROS":
+        result = gesture_recognition_number.get_gesture_prediction(image)
+    else:
+        result = gesture_recognition_letter.get_gesture_prediction(image)
+    # result = gesture_recognition.get_gesture_prediction(image)   
     return result
 
 def authenticate_and_create_token(db: Session, username: str, password: str):
