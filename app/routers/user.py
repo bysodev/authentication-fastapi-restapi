@@ -286,7 +286,7 @@ async def update_user(user_update: UserUpdate, current_user=Depends(Hash.get_cur
     
 
 @router.post("/refreshToken")
-async def refresh_access_token(name:str, email: str, db: Session = Depends(get_db)):
+async def refresh_access_token(name:str, email: str):
     try:
         body = Hash.create_access_token(
             data={'name': name, 'email': email}
