@@ -67,7 +67,7 @@ def create_tables():
     except Exception as e:
         print(f'Existe un Error: {e}')
 
-create_tables()
+# create_tables()
 
 app.add_middleware(
     CORSMiddleware,

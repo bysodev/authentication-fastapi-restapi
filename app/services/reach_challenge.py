@@ -14,7 +14,7 @@ def service_new_reach_challenge(new_reach_challenge, db: Session):
     print(difficulty.bonus)
     bonus = 0
     end_points = 0
-    if porcentaje > 75 :
+    if porcentaje > 65 :
         print('Si entro')
         bonus = difficulty.bonus
         end_points = reach_challenge_dict['points'] + bonus

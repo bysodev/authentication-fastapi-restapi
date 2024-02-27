@@ -292,3 +292,21 @@ def service_update_user(user_update, current_user, db: Session):
             status_code=getattr(e, "status_code", status.HTTP_400_BAD_REQUEST),
             detail=f"{e.detail}"
         )
+    
+# PUNTAJE PERSONAL
+def bring_personal_ranking_challenges_by_difficulty(db:Session, category: str, id: int):
+    result = user.ranking_personal_challege_by_difficulty(db, category, id)
+    result_dict = {
+        'FACIL': {'dificultad': 'FACIL', 'retos': 0, 'lecciones': 0, 'puntos': 0, 'ranking': 0 },
+        'MEDIO': {'dificultad': 'MEDIO', 'retos': 0, 'lecciones': 0, 'puntos': 0, 'ranking': 0 },
+        'DIFICIL': {'dificultad': 'DIFICIL', 'retos': 0, 'lecciones': 0, 'puntos': 0, 'ranking': 0 }
+    }
+    columns = result.keys()
+    for row in result:
+        row_dict = dict(zip(columns, row))
+        dificultad = row_dict['dificultad']
+        result_dict[dificultad] = row_dict
+
+    print(result_dict)
+
+    return result_dict

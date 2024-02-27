@@ -2,6 +2,8 @@ from fastapi import HTTPException, status
 from sqlalchemy.orm import Session 
 from app.models.models import Provider, User
 from app.schemas.schemas import UserUpdate
+from sqlalchemy import text, column, bindparam, Integer, String, Numeric
+
 
 def create_user(new_user: User , db:Session):
     db.add(new_user)
@@ -71,3 +73,37 @@ def update_user(user: UserUpdate, id:int , db:Session):
     db.query(User).filter(User.id == id).update(user_dict)
     db.commit()
     return db.query(User).filter(User.id == id).first()
+
+def ranking_personal_challege_by_difficulty(db: Session, category: str, id: int):
+    print(category)
+    print(id)
+    stmt = text("WITH UserStats AS ("
+                    " SELECT"
+                        " diff.name AS dificultad,"
+                        " COUNT(reach.id) AS retos,"
+                        " COALESCE(SUM(reach.points), 0) + COALESCE(SUM(CASE WHEN les.last_points_reached > 0 THEN (les.points_reached + les.last_points_reached) / 2 ELSE les.points_reached END), 0) AS puntos,"
+                        " ROW_NUMBER() OVER (PARTITION BY diff.name ORDER BY COALESCE(SUM(reach.points), 0) + COALESCE(SUM(CASE WHEN les.last_points_reached > 0 THEN (les.points_reached + les.last_points_reached) / 2 ELSE les.points_reached END), 0) DESC) AS ranking,"
+                        " COUNT(les.id) AS lecciones"
+                    " FROM "
+                    " public.challenges AS chall "
+                    " LEFT JOIN public.reach_challenges AS reach ON chall.id = reach.id_challenge "
+                    " LEFT JOIN public.user AS us ON us.id = reach.id_user "
+                    " FULL OUTER JOIN public.user_lesson AS les ON us.id = les.id_user "
+            " JOIN public.category AS cate ON chall.category_id = cate.id AND cate.name=:categoria "
+            " JOIN public.difficulty AS diff ON chall.difficulty_id = diff.id"
+                " WHERE (reach.points IS NOT NULL OR les.points_reached IS NOT NULL) AND us.id=:id"
+            " GROUP BY diff.name)"
+        " SELECT userStats.* FROM UserStats AS userStats;").\
+        bindparams(categoria=category, id=id)
+            
+        
+    stmt.columns(
+        column('dificultad', String),
+        column('retos', Integer),
+        column('puntos', Numeric),
+        column('lecciones', Integer)
+    )
+    result = db.execute(stmt)
+    return result
+
+# " JOIN public.category AS cate ON chall.category_id = cate.id AND cate.name=:categoria "

@@ -16,12 +16,23 @@ from app.services.user import (
     service_update_user,
     service_verified_user,
     validar_lesson,
+    bring_personal_ranking_challenges_by_difficulty
 )
 
 router = APIRouter(
     prefix='/user',
     tags=['Users']
 )
+
+@router.get('/ranking', status_code=status.HTTP_200_OK)
+def search_ranking_challenge_by_user( category: str, current_user=Depends(Hash.get_current_active_user), db: Session = Depends(get_db)):
+    id_user = current_user['id']
+    if category == '':
+        raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST, 
+                            detail='Falta el parametro de Categoria')
+    
+    return bring_personal_ranking_challenges_by_difficulty(db, category, id_user)
+
 
 @router.post('/register', status_code=status.HTTP_201_CREATED)
 def new_user(user: User, db: Session = Depends(get_db)):
