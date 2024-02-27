@@ -77,6 +77,7 @@ def update_user(user: UserUpdate, id:int , db:Session):
 def ranking_personal_challege_by_difficulty(db: Session, category: str, id: int):
     stmt = text("WITH UserStats AS ("
                     " SELECT"
+                        " us.id,"
                         " diff.name AS dificultad,"
                         " COUNT(reach.id) AS retos,"
                         " COALESCE(SUM(reach.points), 0) + COALESCE(SUM(CASE WHEN les.last_points_reached > 0 THEN (les.points_reached + les.last_points_reached) / 2 ELSE les.points_reached END), 0) AS puntos,"
@@ -89,9 +90,9 @@ def ranking_personal_challege_by_difficulty(db: Session, category: str, id: int)
                     " FULL OUTER JOIN public.user_lesson AS les ON us.id = les.id_user "
             " JOIN public.category AS cate ON chall.category_id = cate.id AND cate.name=:categoria "
             " JOIN public.difficulty AS diff ON chall.difficulty_id = diff.id"
-                " WHERE (reach.points IS NOT NULL OR les.points_reached IS NOT NULL) AND us.id=:id"
-            " GROUP BY diff.name)"
-        " SELECT userStats.* FROM UserStats AS userStats;").\
+                " WHERE (reach.points IS NOT NULL OR les.points_reached IS NOT NULL)"
+            " GROUP BY diff.name, us.id)"
+        " SELECT userStats.* FROM UserStats AS userStats WHERE userStats.id=:id;").\
         bindparams(categoria=category, id=id)
             
         
@@ -103,5 +104,3 @@ def ranking_personal_challege_by_difficulty(db: Session, category: str, id: int)
     )
     result = db.execute(stmt)
     return result
-
-# " JOIN public.category AS cate ON chall.category_id = cate.id AND cate.name=:categoria "
