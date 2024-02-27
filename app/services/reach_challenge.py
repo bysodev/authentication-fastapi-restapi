@@ -7,15 +7,11 @@ from app.services.challenge import bring_challenge_id
 
 def service_new_reach_challenge(new_reach_challenge, db: Session):
     reach_challenge_dict = new_reach_challenge
-    print(reach_challenge_dict)
     challenge, difficulty = bring_challenge_id(reach_challenge_dict['id_challenge'], db)
     porcentaje = (reach_challenge_dict['points'] / challenge.points) * 100
-    print(porcentaje)
-    print(difficulty.bonus)
     bonus = 0
     end_points = 0
     if porcentaje > 65 :
-        print('Si entro')
         bonus = difficulty.bonus
         end_points = reach_challenge_dict['points'] + bonus
 
@@ -24,7 +20,6 @@ def service_new_reach_challenge(new_reach_challenge, db: Session):
         "end_points": end_points,
         **new_reach_challenge
     }
-    print(new_user_challenge)
     try:
         new_reach_challenge = models.ReachChallenges(**new_user_challenge)
         reach_challenge.create_reach_challenge(new_reach_challenge, db)
@@ -56,12 +51,8 @@ def service_new_reach_customized_challenge(new_reach_customized_challenge, db: S
         "fails": new_reach_customized_challenge["fails"]
     }
     try:
-        print('El modelo')
-        print(definitivo_customized_challenge)
         new_reach_customized_challenge = models.ReachChallengesCustomized(**definitivo_customized_challenge)
-        print(new_reach_customized_challenge)
         reach_challenge.create_reach_customized_challenge(new_reach_customized_challenge, db)
-        print('Buena respuesta')
         return definitivo_customized_challenge
     except Exception as e:
         raise HTTPException(
@@ -97,7 +88,6 @@ def bring_reach_challanges_by_user( db: Session, category: str, id: int ):
         )
     
 def bring_reach_challanges_by_user( db: Session, current_user = Depends(Hash.get_current_user) ):
-    print(current_user)
     try:
         return reach_challenge.get_reach_challenge_by_user(current_user.id)
     except Exception as e:

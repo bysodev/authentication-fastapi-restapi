@@ -12,7 +12,6 @@ def service_new_category(new_category, db: Session):
             category.create_category(new_category, db)
             return category_dict
     except Exception as e:
-        print(f"Error al crear el reto {e}")
         raise HTTPException(
             status_code=status.HTTP_400_BAD_REQUEST,
             detail=f"Error al crear la Categoria {e}"

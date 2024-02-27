@@ -75,8 +75,6 @@ def update_user(user: UserUpdate, id:int , db:Session):
     return db.query(User).filter(User.id == id).first()
 
 def ranking_personal_challege_by_difficulty(db: Session, category: str, id: int):
-    print(category)
-    print(id)
     stmt = text("WITH UserStats AS ("
                     " SELECT"
                         " diff.name AS dificultad,"

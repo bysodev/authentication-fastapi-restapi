@@ -38,9 +38,7 @@ def new_reach_challenge(reach_challange: SchemaReachCustomizedChallenges, curren
         "state": "COMPLETADO",
         **reach_challange.model_dump()
     }
-    print('DESDE AQUI LO PERSONALIZADO')
     challange_customized_created = service_new_reach_customized_challenge(new_user_challenge_customized,db)
-    print(challange_customized_created)
     if not challange_customized_created:
         raise HTTPException(status_code=status.HTTP_409_CONFLICT, 
                             detail='Conflictos al crear este logro de reto')
