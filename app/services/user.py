@@ -262,29 +262,34 @@ def authenticate_and_create_token(db: Session, username: str, password: str):
 def service_update_user(user_update, current_user, db: Session):
     try:
         # Create a new UserUpdate object with the values that are different
-        updated_values = {k: v for k, v in user_update.dict().items() if v is not None and current_user.get(k) != v}
+        updated_values = {k: v for k, v in user_update.dict().items() if v is not None}
+        # updated_values = {k: v for k, v in user_update.dict().items() if v is not None and current_user.get(k) != v}
         userData = user.get_user(db, current_user['username'])
-        if not hashing.Hash.verify_password(updated_values['currentPassword'], userData.password):
-            raise HTTPException(
-                status_code=status.HTTP_401_UNAUTHORIZED,
-                detail="Contraseña incorrecta"
-            )
-        updated_values.pop('currentPassword')
+        if updated_values['only'] == False:
+            if not hashing.Hash.verify_password(updated_values['currentPassword'], userData.password):
+                raise HTTPException(
+                    status_code=status.HTTP_401_UNAUTHORIZED,
+                    detail="Contraseña incorrecta"
+                )
+            updated_values.pop('currentPassword')
+            # remove the current password from the dictionary
+            # if updated_values.get('password') is not None:
+            if updated_values.get('password'):
+                updated_values['password'] = hashing.Hash.hash_password(updated_values['password'])
+        
+        updated_values.pop('only')
         if not updated_values:
             raise HTTPException(
                 status_code=status.HTTP_400_BAD_REQUEST,
                 detail="No proporcionaste nueva información"
             )
-        if updated_values.get('username'):
+        if (updated_values.get('username')) and (updated_values.get('username') != userData.username):
             user_conflict = user.get_user(db, user_update.username)
             if user_conflict:
                 raise HTTPException(
                     status_code=status.HTTP_409_CONFLICT,
                     detail="El usuario no está disponible"
                 )
-        # remove the current password from the dictionary
-        if updated_values.get('password'):
-            updated_values['password'] = hashing.Hash.hash_password(updated_values['password'])
         updated_values = UserUpdate(**updated_values)
         user.update_user(updated_values, current_user['id'], db)
     except Exception as e:
