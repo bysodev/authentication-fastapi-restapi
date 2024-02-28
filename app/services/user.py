@@ -311,7 +311,4 @@ def bring_personal_ranking_challenges_by_difficulty(db:Session, category: str, i
         row_dict = dict(zip(columns, row))
         dificultad = row_dict['dificultad']
         result_dict[dificultad] = row_dict
-
-    print(result_dict)
-
     return result_dict

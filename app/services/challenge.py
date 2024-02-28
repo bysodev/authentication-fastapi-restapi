@@ -129,7 +129,6 @@ def bring_challanges_by_userDSA(category: str, id: int,  db: Session ):
     output = []
     # for challenges, *aditional in result_chall:
     for challenges, end_points, reach_state, minutes, difficulty_name, category_name in result_chall:
-        print(f'Este es el challange: { challenges.as_dict() }')
         final = challenges.as_dict()
         additional_info = {
             'end_points': end_points,
@@ -140,8 +139,6 @@ def bring_challanges_by_userDSA(category: str, id: int,  db: Session ):
         }
         final.update(additional_info)
         output.append(final)
-    # print(output)
-    # output = [jsonable_encoder(x) for x in result_chall]
     try:
         return output
     except Exception as e:

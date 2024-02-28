@@ -104,5 +104,3 @@ def ranking_personal_challege_by_difficulty(db: Session, category: str, id: int)
     )
     result = db.execute(stmt)
     return result
-
-# " JOIN public.category AS cate ON chall.category_id = cate.id AND cate.name=:categoria "

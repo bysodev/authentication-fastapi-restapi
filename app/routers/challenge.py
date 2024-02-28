@@ -47,7 +47,6 @@ def search_challenge_by_user( category: str, db: Session = Depends(get_db), curr
 
 @router.get('/start/me', status_code=status.HTTP_200_OK)
 def search_challenge_by_user( category: str, difficulty: str, db: Session = Depends(get_db), current_user = Depends(Hash.get_current_user)):
-    print(current_user.id)
     if (category == '' or difficulty == '') :
         raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST, 
                             detail='Parametro vacio')

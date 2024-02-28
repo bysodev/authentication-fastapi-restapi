@@ -13,7 +13,6 @@ def start_challenge(category: str, difficulty: str, id: int, db: Session):
         .join(Difficulty, ( Difficulty.id == Challenges.difficulty_id ) & ( Difficulty.name == difficulty ) )\
         .filter( not_(  db.query(ReachChallenges).filter(ReachChallenges.id_user == id, ReachChallenges.id_challenge == Challenges.id).exists() ) )\
         .order_by(func.random()).first()
-    print(challenges)
     return challenges
 
 def get_challenges(db: Session):
